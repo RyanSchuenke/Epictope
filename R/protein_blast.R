@@ -22,7 +22,10 @@ protein_blast <- function(seqs, blast_file, blast_type = "blastp") {
   db <- blast(db = blast_file, type = blast_type)
 
   # Run BLAST and predict matches for the input sequences
-  blast_res <- predict(db, seqs)
+  blast_res <- predict(db, seqs, 
+              BLAST_args="-evalue 0.01", 
+              custom_format="qseqid sseqid staxid slen pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+              )
 
   # Attach the filename of the BLAST database to the results
   blast_res$filename <- blast_file
