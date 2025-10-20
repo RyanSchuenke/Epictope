@@ -40,7 +40,7 @@ names(aa_files) <- aa_files
 blast_results <- lapply(aa_files, function(.x){protein_blast(seq, .x)})
 
 # take the highest blast match according to E score 
-find_best_match <- function(.x){head(.x[base::order(.x$E),], 1)}
+find_best_match <- function(.x){head(.x[base::order(.x$evalue),], 1)}
 blast_best_match <- lapply(blast_results, find_best_match)
 blast_seqs <- lapply(blast_best_match, fetch_sequences)
 
