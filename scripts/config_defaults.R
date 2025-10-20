@@ -1,6 +1,8 @@
 # define species to run MSA against
 species <- c("bos_taurus", "canis_lupus_familiaris", "gallus_gallus", "homo_sapiens", "mus_musculus", "takifugu_rubripes", "xenopus_tropicalis")
 assign("species", species, envir = .GlobalEnv)
+blast_db <- "swissprot"
+assign("blast_db", blast_db, envir = .GlobalEnv)
 
 # weights for tagging features
 h_weight = 1.5 # shannon entropy

@@ -16,4 +16,6 @@ lapply(cds_links, ftp_download)
 cdna_files <- list.files(cds_folder, pattern = "\\.all.fa.gz$", full.names = TRUE, recursive = TRUE)
 lapply(cdna_files, make_protein_db)
 
-
+setwd("./data/CDS")
+system2("update_blastdb.pl", args = c("--decompress ", blast_db))
+setwd("../../")
