@@ -15,7 +15,7 @@ fetch_sequences <- function(blast_results) {
   cur_proteins <- Biostrings::readAAStringSet(blast_results$filename, format = "fasta")
 
   # Subset sequences by query name (SubjectID)
-  cur_seqs <- cur_proteins[grepl(blast_results$SubjectID, names(cur_proteins))]
+  cur_seqs <- cur_proteins[grepl(blast_results$sseqid, names(cur_proteins))]
 
   # Return the matched sequences
   return(cur_seqs)
