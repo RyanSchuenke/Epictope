@@ -59,9 +59,9 @@ if exist muscle.exe (
 :: Check if the file exists
 call conda activate epictope
 echo Installing EpicTope from GitHub...
-call R -e "rlib <- file.path(Sys.getenv('CONDA_PREFIX'),'Lib','R','library'); .libPaths(rlib); remotes::install_github('FriedbergLab/EpicTope')"
+call R -e "rlib <- file.path(Sys.getenv('CONDA_PREFIX'),'Lib','R','library'); .libPaths(rlib); remotes::install_github('RyanSchuenke/EpicTope')"
 
-call curl -o "single_score.R" "https://raw.githubusercontent.com/FriedbergLab/EpicTope/main/scripts/single_score.R"
-call curl -o "plot_scores.R" "https://raw.githubusercontent.com/FriedbergLab/Epictope/main/scripts/plot_scores.R"
-call curl -o "install.R" "https://raw.githubusercontent.com/FriedbergLab/EpicTope/main/scripts/install.R"
-call curl -o "config_defaults.R" "https://raw.githubusercontent.com/FriedbergLab/EpicTope/main/scripts/config_defaults.R"
+call curl -o "single_score.R" "https://raw.githubusercontent.com/RyanSchuenke/EpicTope/main/scripts/single_score.R"
+call curl -o "plot_scores.R" "https://raw.githubusercontent.com/RyanSchuenke/Epictope/main/scripts/plot_scores.R"
+call curl -o "install.R" "https://raw.githubusercontent.com/RyanSchuenke/EpicTope/main/scripts/install.R"
+call curl -o "config_defaults.R" "https://raw.githubusercontent.com/RyanSchuenke/EpicTope/main/scripts/config_defaults.R"
