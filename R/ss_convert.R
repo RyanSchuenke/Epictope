@@ -18,7 +18,7 @@ ss_convert <- function(.x) {
   if (!grepl("[GHIECTBSP]", .x)) {
     # If not, print an error message and return NULL
     message("Character is not a recognized Secondary Structure Symbol.")
-    return(NULL)
+    return(NA)
   } else {
     # Return the numeric value corresponding to the Secondary Structure Symbol as defined in the SS_key
     return(ss_key[.x])

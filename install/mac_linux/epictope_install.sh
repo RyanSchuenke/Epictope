@@ -7,8 +7,20 @@ if ! command -v conda &> /dev/null; then
     # Determine the OS and set the appropriate miniconda installer URL
     case "$(uname -s)" in
         Darwin)
-            installer_url="https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh"
-            installer_name="Miniconda3-latest-MacOSX-x86_64.sh"
+            case "$(uname -m)" in
+                x86-64)
+                    installer_url="https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh"
+                    installer_name="Miniconda3-latest-MacOSX-x86_64.sh"
+                    ;;
+                arm64)
+                    installer_url="https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh"
+                    installer_name="Miniconda3-latest-MacOSX-arm64.sh"
+                    ;;
+                *)
+                    echo "Unsupported operating system."
+                    exit 1
+                    ;;
+            esac
             ;;
         Linux)
             installer_url="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
@@ -31,11 +43,9 @@ else
 
     # Create a new conda environment for epictope
     conda create -n epictope
+    conda install -n epictope -c conda-forge dssp
     conda install -n epictope -c bioconda blast muscle
-    conda install -n epictope -c salilab dssp
-    conda install -n epictope -c anaconda "openssl>=3.0.9"
     conda install -n epictope -c conda-forge r-base r-stringi r-openssl r-remotes r-curl r-rvest r-httr "r-r.utils" r-biocmanager "python>=3.11.4"
-    conda install -n epictope libboost=1.73.0 # for compatibility for dssp 3
     
     # Install R packages in the epictope environment
     (
