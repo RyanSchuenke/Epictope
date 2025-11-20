@@ -10,17 +10,30 @@ rm(list = ls())
 setup_files()
 check_config()
 args <- commandArgs(trailingOnly = TRUE); query <- args[1]
+if (length(args) == 2) {
+    message("Using user-supplied structure file.")
+    if (!file.exists(args[2])) {
+        stop("User-supplied structure file does not exist: ", args[2])
+    }
+    alphafold_file_custom <- args[2]
+} else {
+    alphafold_file_custom <- NULL
+}
 # download uniprot information 
 uniprot_fields <- c("accession", "id", "gene_names", "xref_alphafolddb", "sequence", "organism_name", "organism_id")
 uniprot_data <- query_uniProt(query = query, fields = uniprot_fields)
 
 ####
 # download associated alphafold2 pdb
-if(is.na(uniprot_data$AlphaFoldDB)){
-  message("WARNING. NO CROSSREFERENCE ALPHAFOLD ENTRY FOUND; ATTEMPTING DIRECT LOOKUP. RESULTS MAY BE LOW CONFIDENCE.")
-  uniprot_data$AlphaFoldDB <- query}
-alphafold_file <- fetch_alphafold(gsub(";", "", uniprot_data$AlphaFoldDB))
-if(is.na(alphafold_file)){stop("No alphafold file found for ", query)}
+if (is.null(alphafold_file_custom)) {
+    if(is.na(uniprot_data$AlphaFoldDB)){
+      message("WARNING. NO CROSSREFERENCE ALPHAFOLD ENTRY FOUND; ATTEMPTING DIRECT LOOKUP. RESULTS MAY BE LOW CONFIDENCE.")
+      uniprot_data$AlphaFoldDB <- query}
+    alphafold_file <- fetch_alphafold(gsub(";", "", uniprot_data$AlphaFoldDB))
+    if(is.na(alphafold_file)){stop("No alphafold file found for ", query)}
+} else {
+    alphafold_file <- alphafold_file_custom
+}
 # calculate dssp on alphafold pdb file
 dssp_res <- dssp_command(alphafold_file)
 # parse and read in dssp
