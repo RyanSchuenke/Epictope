@@ -117,6 +117,15 @@ Rscript install.R
 Rscript single_score.R Q9W7E7
 ```
 
+### Example 1C: Generating EpicTope predictions for custom AlphaFold structures
+
+Some UniProt entries do not have a corresponding AlphaFold prediction yet. To use a custom structure, first identify the Uniprot ID as described in example 1A, and select the "Sequence" tab (for example: [Q9W7E7](https://www.uniprot.org/uniprotkb/Q9W7E7/entry#sequences)). Submit the exact sequence to [AlphaFold](https://alphafoldserver.com/). Download the results, and copy one of the .cif files to the `data/models` directory of `epictope`. Finally, supply the path to the custom structure as a command-line input to `epictope`:
+```bash
+conda activate epictope
+Rscript install.R
+Rscript single_score.R Q9W7E7 data/models/custom_model_of_Q9W7E7.cif
+```
+
 ### Example 2: Viewing your results.
 
 The EpicTope workflow generates a "\<UniprotID\>_score.csv" file (ex: Q9W7E7_score.csv), containing the individual feature scores for each position, the minimum score across features for each position, and a weighted sum score of all features. These values can be plotted in the data visualization tool of choice.
