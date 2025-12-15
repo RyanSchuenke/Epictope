@@ -13,14 +13,29 @@ score_data$min_val <- as.numeric(score_data$min)
 
 # Define moving average function
 moving_average <- function(x, window_size) {
+  if (window_size %% 2 == 0) stop("window_size must be odd")
+  
   n <- length(x)
-  ma <- numeric(n - window_size + 1)
-  pad <- rep(NA, floor(window_size/2))
-  for (i in 1:(n - window_size + 1)) {
-    ma[i] <- mean(x[i:(i + window_size - 1)])
+  ma <- numeric(n)
+  half_window <- floor(window_size / 2)
+  
+  # Start edge: progressively increase window size from 4 up to (window_size - 1)
+  for (i in 1:half_window) {
+    ma[i] <- mean(x[1:(i + half_window)])
   }
-  res <- c(pad, ma, pad)
-  return(res)
+  
+  # Middle: full window
+  for (i in (half_window + 1):(n - half_window)) {
+    ma[i] <- mean(x[(i - half_window):(i + half_window)])
+  }
+  
+  # End edge: progressively decrease window size from (window_size - 1) to 4
+  for (i in (n - half_window + 1):n) {
+    start_index <- i - (n - i) - half_window
+    ma[i] <- mean(x[start_index:n])
+  }
+  
+  return(ma)
 }
 
 # reformat
