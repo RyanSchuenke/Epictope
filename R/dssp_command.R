@@ -16,8 +16,8 @@ dssp_command <- function(cif_file) {
   # Check that .x is a character vector
   stopifnot(is.character(cif_file))
 
-  # Define output filename by replacing the extension with ".dssp"
-  output_file <- gsub("\\.cif.gz|\\.cif", ".dssp", cif_file)
+  # Define output filename with config model_folder and replacing the extension with ".dssp"
+  output_file <- file.path(model_folder, basename(gsub("\\.cif.gz|\\.cif", ".dssp", cif_file)))
 
   # Run the DSSP command with mkdssp, return error message if an error occurs.
   system(command = paste0("mkdssp ", cif_file, " ", output_file), intern = TRUE)
