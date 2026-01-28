@@ -4,19 +4,19 @@
 \alias{dssp_command}
 \title{dssp_command}
 \usage{
-dssp_command(pdb_file)
+dssp_command(cif_file)
 }
 \arguments{
-\item{pdb_file}{A character vector specifying the path to the input PDB file.}
+\item{cif_file}{A character vector specifying the path to the input mmCIF file.}
 }
 \value{
 The function returns the name of the output DSSP file.
 }
 \description{
-Runs the DSSP command with mkdssp to process a PDB file and generates a DSSP file.
+Runs the DSSP command with mkdssp to process a mmCIF file and generates a DSSP file.
 }
 \examples{
-# Generate the DSSP file from the input PDB file "protein.pdb"
-#dssp_command("protein.pdb")
+# Generate the DSSP file from the input mmCIF file "protein.cif"
+#dssp_command("protein.cif")
 
 }

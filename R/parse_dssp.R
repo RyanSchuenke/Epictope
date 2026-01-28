@@ -17,7 +17,7 @@ parse_dssp <- function(file, keepfiles = TRUE) {
 
   counter <- 0
   resnum <- c()
-  respdb <- c()
+  rescif <- c()
   chain <- c()
   aa <- c()
   ss <- c()
@@ -42,7 +42,7 @@ parse_dssp <- function(file, keepfiles = TRUE) {
     if (counter > first_valid_line & length(line) != 0) {
       a <- strsplit(line, split = "")[[1]]
       resnum <- c(resnum, paste(a[1:5], collapse = ""))
-      respdb <- c(respdb, paste(a[6:10], collapse = ""))
+      rescif <- c(rescif, paste(a[6:10], collapse = ""))
       chain <- c(chain, paste(a[11:12], collapse = ""))
       aa <- c(aa, paste(a[13:14], collapse = ""))
       ss <- c(ss, paste(a[15:17], collapse = ""))
@@ -58,14 +58,14 @@ parse_dssp <- function(file, keepfiles = TRUE) {
 
   ## ------ Setting the variable types ------------- ##
   resnum <- as.numeric(resnum)
-  respdb <- as.numeric(respdb)
+  rescif <- as.numeric(rescif)
   chain <- gsub(" ", "", chain)
   aa <- gsub(" ", "", aa)
   ss <- gsub("   ", "C", ss)
   ss <- gsub(" ", "", ss)
 
   ## -------- Building the dataframe ---------------- ##
-  df <- as.data.frame(matrix(c(resnum, respdb, chain, aa,
+  df <- as.data.frame(matrix(c(resnum, rescif, chain, aa,
                                ss, sasa, phi, psi), ncol = 8),
                       stringsAsFactors = FALSE)
 

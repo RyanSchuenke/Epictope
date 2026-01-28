@@ -24,7 +24,7 @@ uniprot_fields <- c("accession", "id", "gene_names", "xref_alphafolddb", "sequen
 uniprot_data <- query_uniProt(query = query, fields = uniprot_fields)
 
 ####
-# download associated alphafold2 pdb
+# download associated alphafold2 mmCIF
 if (is.null(alphafold_file_custom)) {
     if(is.na(uniprot_data$AlphaFoldDB)){
       message("WARNING. NO CROSSREFERENCE ALPHAFOLD ENTRY FOUND; ATTEMPTING DIRECT LOOKUP. RESULTS MAY BE LOW CONFIDENCE.")
@@ -34,7 +34,7 @@ if (is.null(alphafold_file_custom)) {
 } else {
     alphafold_file <- alphafold_file_custom
 }
-# calculate dssp on alphafold pdb file
+# calculate dssp on alphafold mmCIF file
 dssp_res <- dssp_command(alphafold_file)
 # parse and read in dssp
 dssp_df <- parse_dssp(dssp_res)
