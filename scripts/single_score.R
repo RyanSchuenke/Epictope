@@ -10,21 +10,41 @@ rm(list = ls())
 setup_files()
 check_config()
 args <- commandArgs(trailingOnly = TRUE); query <- args[1]
+if (length(args) >= 2) {
+    message("Using user-supplied structure file.")
+    if (!file.exists(args[2])) {
+        stop("User-supplied structure file does not exist: ", args[2])
+    }
+    alphafold_file_custom <- args[2]
+} else {
+    alphafold_file_custom <- NULL
+}
 # download uniprot information 
 uniprot_fields <- c("accession", "id", "gene_names", "xref_alphafolddb", "sequence", "organism_name", "organism_id")
 uniprot_data <- query_uniProt(query = query, fields = uniprot_fields)
 
 ####
 # download associated alphafold2 pdb
-if(is.na(uniprot_data$AlphaFoldDB)){
-  message("WARNING. NO CROSSREFERENCE ALPHAFOLD ENTRY FOUND; ATTEMPTING DIRECT LOOKUP. RESULTS MAY BE LOW CONFIDENCE.")
-  uniprot_data$AlphaFoldDB <- query}
-alphafold_file <- fetch_alphafold(gsub(";", "", uniprot_data$AlphaFoldDB))
-if(is.na(alphafold_file)){stop("No alphafold file found for ", query)}
+if (is.null(alphafold_file_custom)) {
+    if(is.na(uniprot_data$AlphaFoldDB)){
+      message("WARNING. NO CROSSREFERENCE ALPHAFOLD ENTRY FOUND; ATTEMPTING DIRECT LOOKUP. RESULTS MAY BE LOW CONFIDENCE.")
+      uniprot_data$AlphaFoldDB <- query}
+    alphafold_file <- fetch_alphafold(gsub(";", "", uniprot_data$AlphaFoldDB))
+    if(is.na(alphafold_file)){stop("No alphafold file found for ", query)}
+} else {
+    alphafold_file <- alphafold_file_custom
+}
 # calculate dssp on alphafold pdb file
 dssp_res <- dssp_command(alphafold_file)
 # parse and read in dssp
 dssp_df <- parse_dssp(dssp_res)
+if (!is.null(alphafold_file_custom) & length(args) == 2) {
+    message("No starting residue index provided for user-supplied structure file. Assuming user-supplied structure file starts with residue 1.")
+} else if (!is.null(alphafold_file_custom) & length(args) == 3) {
+    message("User-supplied structure file starts with residue index ", args[3], ".")
+    dssp_df$resnum <- dssp_df$resnum + as.numeric(args[3]) - 1
+    dssp_df$position <- as.character(as.numeric(dssp_df$position) + as.numeric(args[3]) - 1)
+}
 
 # retrieve iupred/anchor2 disordered binding regions
 iupred_df <- iupredAnchor(query)

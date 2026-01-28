@@ -33,9 +33,9 @@ parse_dssp <- function(file, keepfiles = TRUE) {
       l <- strsplit(line, split = "")[[1]]
       l <- paste(l, collapse = "")
       if ("have bz2" %in% l) {
-          if(.Platform$OS.type == "unix") {first_valid_line <- 29} else {first_valid_line <- 28}
+          if(.Platform$OS.type == "unix") {first_valid_line <- 29} else {first_valid_line <- 29}
       } else {
-          if(.Platform$OS.type == "unix") {first_valid_line <- 28} else {first_valid_line <- 27}
+          if(.Platform$OS.type == "unix") {first_valid_line <- 28} else {first_valid_line <- 28}
       }
     }
 

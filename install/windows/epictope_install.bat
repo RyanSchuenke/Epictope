@@ -13,19 +13,24 @@ if %errorlevel% neq 0 (
     call conda create --name epictope --yes
 )
 :: activate the 'Epictope' environment and install dependencies
+call conda install -n epictope -c conda-forge dssp --yes
+call conda install -n epictope -c conda-forge r-base r-stringi r-openssl r-remotes r-curl r-rvest r-httr "r-r.utils" r-biocmanager --yes
 call conda activate epictope
-call conda install -c speleo3 dssp --yes
-call conda install -c conda-forge r-base r-stringi r-openssl r-remotes --yes
+call conda env config vars set -n epictope LIBCIFPP_DATA_DIR="%CONDA_PREFIX%\share\libcifpp"
+powershell -Command "(New-Object Net.WebClient).DownloadFile('https://files.wwpdb.org/pub/pdb/data/monomers/components.cif', '%CONDA_PREFIX%\share\libcifpp\components.cif')"
+call conda deactivate
 :: report success
 echo Epictope environment installation complete.
 
 :: Installing Bioconductor dependencies inside conda env
+call conda activate epictope
 echo Installing Bioconductor dependencies inside conda environment...
 call R -e "rlib <- file.path(Sys.getenv('CONDA_PREFIX'),'Lib','R','library'); if(!dir.exists(rlib)) dir.create(rlib, recursive=TRUE); .libPaths(rlib); if(!requireNamespace('BiocManager', quietly=TRUE)) install.packages('BiocManager', repos='https://cloud.r-project.org'); BiocManager::install(c('S4Vectors','IRanges','XVector','Biostrings','GenomeInfoDb'), ask=FALSE)"
 
 :: BLAST INSTALLATION
 :: Check if the file exists
-if exist ncbi-blast-2.7.1+-win64.exe (
+where /q blastn
+if ERRORLEVEL 0 (
     echo Blast executable found. Skipping installation.
 ) else (
     :: Download the blast installer
@@ -48,7 +53,7 @@ if exist muscle.exe (
 ) else (
     :: Download the MUSCLE installer
     echo Downloading MUSCLE...
-    powershell -Command "(New-Object Net.WebClient).DownloadFile('https://github.com/rcedgar/muscle/releases/download/5.1.0/muscle5.1.win64.exe', '%cd%\muscle5.1.win64.exe')"
+    powershell -Command "(New-Object Net.WebClient).DownloadFile('https://github.com/rcedgar/muscle/releases/download/v5.1/muscle5.1.win64.exe', '%cd%\muscle5.1.win64.exe')"
     echo Renaming MUSCLE executable...
     move muscle5.1.win64.exe muscle.exe
     :: report success

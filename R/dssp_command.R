@@ -17,7 +17,7 @@ dssp_command <- function(pdb_file) {
   stopifnot(is.character(pdb_file))
 
   # Define output filename by replacing the extension with ".dssp"
-  output_file <- gsub("\\.pdb.gz|\\.pdb", ".dssp", pdb_file)
+  output_file <- gsub("\\.cif.gz|\\.cif", ".dssp", pdb_file)
 
   # Run the DSSP command with mkdssp, return error message if an error occurs.
   system(command = paste0("mkdssp ", pdb_file, " ", output_file), intern = TRUE)
