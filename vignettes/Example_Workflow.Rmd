@@ -59,12 +59,12 @@ uniprot_fields <- c("accession", "id", "gene_names", "xref_alphafolddb", "sequen
 uniprot_data <- query_uniProt(query = query, fields = uniprot_fields)
 ```
 
-Using the Alphafold2ID provided by Uniprot, we can download the Protein Data Bank file or the AlphaFold2 predicted structure for the protein of interest. We then run DSSP to define the secondary structures from the Alphafold2 PDB file and parse out the results to a dataframe.
+Using the Alphafold2ID provided by Uniprot, we can download the Protein Data Bank file or the AlphaFold2 predicted structure for the protein of interest. We then run DSSP to define the secondary structures from the Alphafold2 mmCIF file and parse out the results to a dataframe.
 
 ```{r, eval = FALSE}
-# download associated alphafold2 pdb
+# download associated alphafold2 mmCIF
 alphafold_file <- fetch_alphafold(gsub(";", "", uniprot_data$AlphaFoldDB))
-# calculate dssp on alphafold2 pdb file
+# calculate dssp on alphafold2 mmCIF file
 dssp_res <- dssp_command(alphafold_file)
 # parse dssp and convert to dataframe
 dssp_df <- parse_dssp(dssp_res)

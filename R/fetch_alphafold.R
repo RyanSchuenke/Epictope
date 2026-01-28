@@ -1,15 +1,15 @@
 #' @title fetch_alphafold
 #'
-#' @description Downloads the Alphafold2 protein structure prediction in PDB format based on the provided protein ID.
+#' @description Downloads the Alphafold2 protein structure prediction in mmCIF format based on the provided protein ID.
 #'
 #' @param protein_id A character vector specifying the protein ID for which the prediction is to be fetched.
 #'
-#' @return If successful, the function returns the path to the downloaded Alphafold2 PDB file. If the file already
+#' @return If successful, the function returns the path to the downloaded Alphafold2 mmCIF file. If the file already
 #' exists in the specified directory, a message is displayed, and the existing file path is returned. If the download
 #' fails, an error message is displayed, and the function returns NULL.
 #'
 #' @examples
-#' # Download the Alphafold2 PDB for a protein with ID "PDB_ID"
+#' # Download the Alphafold2 mmCIF for a protein with ID "P57102"
 #' fetch_alphafold("P57102")
 #'
 #' @export
@@ -32,7 +32,7 @@ fetch_alphafold <- function(protein_id) {
 
   # Check if the file already exists in the specified directory
   if (file.exists(output_file)) {
-    message("Alphafold2 PDB for ", protein_id, " already exists.")
+    message("Alphafold2 mmCIF for ", protein_id, " already exists.")
     return(output_file)
   }
 
@@ -59,4 +59,3 @@ fetch_alphafold <- function(protein_id) {
 
   return(res)
 }
-

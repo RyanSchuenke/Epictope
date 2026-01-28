@@ -17,7 +17,7 @@ Converts a Secondary Structure Symbol to its corresponding numeric value using t
 }
 \examples{
 # Convert Secondary Structure Symbols to numeric values
-ss_convert("H")  # Output: 1
-ss_convert("E")  # Output: 2
+ss_convert("H")  # Output: 0
+ss_convert("C")  # Output: 1
 
 }
