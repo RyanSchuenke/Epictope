@@ -10,7 +10,7 @@ rm(list = ls())
 setup_files()
 check_config()
 args <- commandArgs(trailingOnly = TRUE); query <- args[1]
-if (length(args) == 2) {
+if (length(args) >= 2) {
     message("Using user-supplied structure file.")
     if (!file.exists(args[2])) {
         stop("User-supplied structure file does not exist: ", args[2])
@@ -38,6 +38,13 @@ if (is.null(alphafold_file_custom)) {
 dssp_res <- dssp_command(alphafold_file)
 # parse and read in dssp
 dssp_df <- parse_dssp(dssp_res)
+if (!is.null(alphafold_file_custom) & length(args) == 2) {
+    message("No starting residue index provided for user-supplied structure file. Assuming user-supplied structure file starts with residue 1.")
+} else if (!is.null(alphafold_file_custom) & length(args) == 3) {
+    message("User-supplied structure file starts with residue index ", args[3], ".")
+    dssp_df$resnum <- dssp_df$resnum + as.numeric(args[3]) - 1
+    dssp_df$position <- as.character(as.numeric(dssp_df$position) + as.numeric(args[3]) - 1)
+}
 
 # retrieve iupred/anchor2 disordered binding regions
 iupred_df <- iupredAnchor(query)

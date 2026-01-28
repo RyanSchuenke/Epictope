@@ -125,6 +125,10 @@ conda activate epictope
 Rscript install.R
 Rscript single_score.R Q9W7E7 data/models/custom_model_of_Q9W7E7.cif
 ```
+Sometimes, the user-supplied structure file may contain only one portion of the complete protein, for example, when the AlphaFold Server limits the user-supplied sequence. In this case, the first residue of the custom structure can be supplied as an addition argument (the N-terminal residue of the protein is residue 1). For example, if the custom structure starts at residue 57 of the protein:
+```
+Rscript single_score.R Q9W7E7 data/models/custom_model_of_Q9W7E7.cif 57
+```
 
 ### Example 2: Viewing your results.
 
