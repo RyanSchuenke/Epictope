@@ -3,6 +3,7 @@ from os import PathLike
 from yaml import safe_load
 
 DEFAULT_CONFIG = {
+    # define species to run MSA against
     "species" : [
         "bos_taurus", 
         "canis_lupus_familiaris", 
@@ -12,12 +13,18 @@ DEFAULT_CONFIG = {
         "takifugu_rubripes", 
         "xenopus_tropicalis"
     ],
+    # weights for tagging features
     "weights" : {
-        "h_weight": 1,
-        "rsa_weight": 1,
-        "ss_weight": 1, 
-        "br_weight": 1
+        "h_weight": 1, # shannon entropy
+        "rsa_weight": 1, # solvent accessible surface area
+        "ss_weight": 1, # secondary structure
+        "br_weight": 1 # disordered binding region
     },
+    # value for secondary structures, must be 0-1.
+    # each letter refers to a type of secondary structure
+    # the number indicates the value or "suitability" for tagging.
+    # values should be from 0-1, with higher values indicating greater
+    # suitability for tagging.
     "ss_key" : {
         "G": 0,
         "H": 0,
@@ -30,6 +37,9 @@ DEFAULT_CONFIG = {
         "P": 0,
         "-": 1
     },
+    # reference values for maximum solvent accessibility of amino acids.
+    # default values estimate from the following study;
+    # https://doi.org/10.1371/journal.pone.0080635
     "max_sasa" : {
         "A": 121,
         "R": 265,

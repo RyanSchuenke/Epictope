@@ -23,11 +23,17 @@ def pos_shannon_entropy(seq:list[str], no_gap:bool = False) -> int:
     entropy_list = []
     
     for i in uniq_bases:
+        # number of times each unique base appears in alignment
         n_i = bases.count(i)
+        
+        # Pr(base) = # times base appears in alignment / total # sequences in alignment
         prob_i = n_i / n_seqs
+        
+        # entropy = Pr(base) * log_2(Pr(base))
         entropt_i = prob_i * log2(prob_i)
         entropy_list.append(entropt_i)
     
+    # shannon entropy = sum of entopies for each base at the same position of alignment
     res_entropy = -sum(entropy_list)
     return res_entropy if res_entropy else 0
 
@@ -53,6 +59,8 @@ def shannon_entropy(msa:MultipleSeqAlignment, query:str, seq_len:int) -> pd.Data
     
     entropy = pd.DataFrame(index=range(seq_len), columns=["position", "aa", "shannon"])
     pos = 0
+    
+    # Calculate the shannon entropy of each position, only if it is not a gap in the query protein
     for base in range(len(msa[0])):
         if msa[query_index][base] != '-':
             entropy.loc[pos] = (pos+1, msa[query_index][base], pos_shannon_entropy(seq=[seq[base] for seq in msa]))
@@ -68,5 +76,6 @@ def norm_shannon(shannon: pd.DataFrame) -> pd.DataFrame:
     :return: Input DataFrame with additional normalized shannon entropy column
     :rtype: DataFrame
     """
+    # divide by max possible entropy: log_2(20) = 4.321928
     shannon["norm_entropy"] = shannon["shannon"] / 4.321928
     return shannon

@@ -26,6 +26,8 @@ def plot_scores(scores_file: os.PathLike, output_file:os.PathLike = None) -> Non
     plot_df = plot_df.dropna()
     window = 7
     half_window = window//2
+    
+    # get the moving average with a window of size 7 (3, 1, 3) around each position
     for i, row in plot_df[:half_window].iterrows():
         index = i[0]
         plot_df.loc[index,"min_moving_avg"] = plot_df.loc[:index+half_window-1]["min"].mean()

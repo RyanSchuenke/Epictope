@@ -24,6 +24,7 @@ def dssp_command(query: str, structure_file: os.PathLike, res_start:int = 1) -> 
     out_file = os.path.splitext(structure_file)[0]+".dssp"
     subprocess.run([dssp_exe, structure_file, out_file])
     
+    # construct dssp dataframe from saved output file
     dssp = make_dssp_dict(out_file)[0]
     dssp_out = pd.DataFrame(index=range(len(dssp)+res_start), columns=["aa", "structure", "acc", "phi", "psi", "position"])
     for key, value in dssp.items():

@@ -112,7 +112,7 @@ def fetch_seq(seq_id:str, db:str, cds_folder:os.PathLike, outfmt:str = "%s") -> 
 def blast(seq:str, db: str, folders:list[os.PathLike], blast_type: str = "blastp", outfmt: str = '10 ', 
           custom_fmt:str = 'qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore') -> list[list]:
     """
-    Blast a sequence against a database and return the results
+    Blast a sequence against a single database and return the results
     
     :param seq: sequence to use as query in blast
     :type seq: str
