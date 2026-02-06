@@ -18,11 +18,11 @@ def add_parser(subparsers:ArgumentParser):
                     help="custom cif or pdb structure file",
                     default = None,)
 
-    custom_struct_group.add_argument("-i", "--index", dest="start_index", required=False,
+    custom_struct_group.add_argument("-r", "--residue", dest="res_start", required=False,
                     help="starting amino acid position in structure file, 1 indexed",
                     default=1, type=int)
     
     parser.set_defaults(func=run)
 
 def run(args) -> None:
-    single_score(query=args.query.upper(), config_path=args.config, custom_cif=args.custom_struct, res_start=args.start_index, graph=args.plot)
+    single_score(query=args.query.upper(), config_path=args.config, custom_cif=args.custom_struct, res_start=args.res_start, graph=args.plot)
