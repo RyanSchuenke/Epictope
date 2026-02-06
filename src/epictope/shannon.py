@@ -2,7 +2,17 @@ from Bio.Align import MultipleSeqAlignment
 from math import log2
 import pandas as pd
 
-def shannon_entropy(seq:list[str], no_gap:bool = False) -> int:
+def pos_shannon_entropy(seq:list[str], no_gap:bool = False) -> int:
+    """
+    Calculates shannon entropy at a single residue
+    
+    :param seq: List of residues at the same position of a multiple sequence alignment
+    :type seq: list[str]
+    :param no_gap: Bool for determining if gaps should be included as a unique base for the position
+    :type no_gap: bool
+    :return: Shannon entropy for the position
+    :rtype: int
+    """
     if no_gap:
         bases = "".join(seq).replace('-', '')
     else:
@@ -21,7 +31,19 @@ def shannon_entropy(seq:list[str], no_gap:bool = False) -> int:
     res_entropy = -sum(entropy_list)
     return res_entropy if res_entropy else 0
 
-def shannon_reshape(msa:MultipleSeqAlignment, query:str, seq_len:int) -> pd.DataFrame:
+def shannon_entropy(msa:MultipleSeqAlignment, query:str, seq_len:int) -> pd.DataFrame:
+    """
+    Calculates the shannon entropy for a specific sequence in a multiple sequence alignment
+    
+    :param msa: Multiple sequence alignments input
+    :type msa: MultipleSeqAlignment
+    :param query: Query protein of interest in the multiple sequence alignment 
+    :type query: str
+    :param seq_len: length of query protein for the size of the ouput dataframe
+    :type seq_len: int
+    :return: DataFrame containing the shannon entropy for each position of the query protein sequence
+    :rtype: DataFrame
+    """
     for i in range(len(msa)):
         if msa[i].name == query:
             query_index = i
@@ -33,10 +55,18 @@ def shannon_reshape(msa:MultipleSeqAlignment, query:str, seq_len:int) -> pd.Data
     pos = 0
     for base in range(len(msa[0])):
         if msa[query_index][base] != '-':
-            entropy.loc[pos] = (pos+1, msa[query_index][base], shannon_entropy(seq=[seq[base] for seq in msa]))
+            entropy.loc[pos] = (pos+1, msa[query_index][base], pos_shannon_entropy(seq=[seq[base] for seq in msa]))
             pos += 1
     return entropy.set_index(["position", "aa"])
 
 def norm_shannon(shannon: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calculates the normalized shannon entropy for a shannon entropy datafram
+    
+    :param shannon: DataFrame containing the raw shannon entropy data
+    :type shannon: pd.DataFrame
+    :return: Input DataFrame with additional normalized shannon entropy column
+    :rtype: DataFrame
+    """
     shannon["norm_entropy"] = shannon["shannon"] / 4.321928
     return shannon

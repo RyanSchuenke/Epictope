@@ -1,5 +1,8 @@
 import argparse
 def main() -> None:
+    """
+    Command line interface for running epictope
+    """
     parser = argparse.ArgumentParser(prog="epictope",
         description= 'Runs the Epictope pipeline on the provided protein accession')
     

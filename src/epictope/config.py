@@ -55,6 +55,14 @@ DEFAULT_CONFIG = {
 }
 
 def load_config(config_path:PathLike = None) -> dict:
+    """
+    get the config dictionary and update the default config if a custom config is provided
+    
+    :param config_path: path to custom configuration file
+    :type config_path: PathLike
+    :return: dictionary containing config parameters
+    :rtype: dict
+    """
     config = DEFAULT_CONFIG.copy()
     if config_path:
         if exists(config_path):

@@ -25,4 +25,4 @@ def add_parser(subparsers:ArgumentParser):
     parser.set_defaults(func=run)
 
 def run(args) -> None:
-    single_score(query=args.query.upper(), config_path=args.config, custom_cif=args.custom_struct, res_start=args.res_start, graph=args.plot)
+    single_score(query=args.query.upper(), config_path=args.config, custom_struct=args.custom_struct, res_start=args.res_start, graph=args.plot)

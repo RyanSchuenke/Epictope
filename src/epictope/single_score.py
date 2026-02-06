@@ -5,7 +5,7 @@ from epictope.dssp import dssp_command
 from epictope.anchor import iupred_anchor
 from epictope.blast import install_db, blast, fetch_seq
 from epictope.muscle import muscle
-from epictope.shannon import shannon_reshape
+from epictope.shannon import shannon_entropy
 from epictope.score import score
 from epictope.plot_scores import plot_scores
 from epictope.config import load_config
@@ -13,8 +13,25 @@ from os import PathLike
 from os.path import join
 from pandas import DataFrame
 
-def single_score(query:str, config_path:PathLike = None, custom_cif:PathLike = None, res_start:int = 1, graph:bool = False) -> DataFrame:
-    if not custom_cif and res_start != 1:
+def single_score(query:str, config_path:PathLike = None, custom_struct:PathLike = None, res_start:int = 1, graph:bool = False) -> DataFrame:
+    """
+    Function for running the main Epictope pipeline and calculating the 
+    "least worst" sites for epitope insertion in a protein sequence.
+    
+    :param query: Uniprot accession of the protein being scored
+    :type query: str
+    :param config_path: Path to the config.yml file
+    :type config_path: PathLike
+    :param custom_struct: Path to a user provided structure file in pdb or cif format for the query protein
+    :type custom_struct: PathLike
+    :param res_start: 1 indexed starting residue of the protein sequence in the custom_struct file relative to the actual protein sequence
+    :type res_start: int
+    :param graph: boolean value to determine if the min score should be plotted
+    :type graph: bool
+    :return: final score dataframe containing shannon entropy, dssp, and iupred2/anchor2 data
+    :rtype: DataFrame
+    """
+    if not custom_struct and res_start != 1:
         raise Exception("Cannot set starting residue without a custom structure")
     elif not res_start:
         res_start = 1
@@ -32,9 +49,9 @@ def single_score(query:str, config_path:PathLike = None, custom_cif:PathLike = N
 
 
     # AlphaFold / DSSP
-    if custom_cif:
-        print("using custom mmCIF file")
-        dssp = dssp_command(query=query, cif_file=custom_cif, res_start=res_start)
+    if custom_struct:
+        print("using custom structure file")
+        dssp = dssp_command(query=query, structure_file=custom_struct, res_start=res_start)
         
         if not seq[res_start-1:res_start-1+len(dssp)] == ("".join(dssp.index.get_level_values(1))):
             raise Exception("structure AA sequence does not match protein sequence with starting position "+str(res_start))
@@ -45,7 +62,7 @@ def single_score(query:str, config_path:PathLike = None, custom_cif:PathLike = N
                 break
         else:
             alphafold_file = fetch_alphafold(query=query, model_folder=folders["model_folder"])
-        dssp = dssp_command(query=query, cif_file=alphafold_file)
+        dssp = dssp_command(query=query, structure_file=alphafold_file)
 
 
     # IUPred / Anchor
@@ -60,7 +77,7 @@ def single_score(query:str, config_path:PathLike = None, custom_cif:PathLike = N
 
     alignment = muscle(query=query, seqs=blast_hits, output_folder=folders["output_folder"])
 
-    shannon = shannon_reshape(msa=alignment, query=query, seq_len=len(seq))
+    shannon = shannon_entropy(msa=alignment, query=query)
 
     # Calculate final scores
     score_df = score(dssp=dssp, anchor=anchor_df, shannon=shannon, config=config)

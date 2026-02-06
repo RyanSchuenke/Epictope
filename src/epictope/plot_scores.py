@@ -3,6 +3,14 @@ import matplotlib.pyplot as plt
 import os
 
 def plot_scores(scores_file: os.PathLike, output_file:os.PathLike = None) -> None:
+    """
+    Plots the moving average of the min score determined by epictope
+    
+    :param scores_file: scores csv file produced by the epictope pipeline
+    :type scores_file: os.PathLike
+    :param output_file: output destination of the figure
+    :type output_file: os.PathLike
+    """
     if not os.path.exists(scores_file):
         raise Exception("Score file '"+scores_file+"' not found")
     if not output_file:
