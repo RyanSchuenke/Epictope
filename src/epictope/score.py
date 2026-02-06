@@ -19,7 +19,7 @@ def score(dssp:pd.DataFrame, anchor:pd.DataFrame, shannon:pd.DataFrame, config:d
     :rtype: DataFrame
     """
     dssp = score_ss(dssp=dssp, ss_key=config["ss_key"])
-    dssp = rsa(dssp)
+    dssp = rsa(dssp, max_sasa=config["max_sasa"])
     anchor = anchor_score(anchor)
     shannon = norm_shannon(shannon)
     

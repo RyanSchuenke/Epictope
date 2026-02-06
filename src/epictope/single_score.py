@@ -77,7 +77,7 @@ def single_score(query:str, config_path:PathLike = None, custom_struct:PathLike 
 
     alignment = muscle(query=query, seqs=blast_hits, output_folder=folders["output_folder"])
 
-    shannon = shannon_entropy(msa=alignment, query=query)
+    shannon = shannon_entropy(msa=alignment, query=query, seq_len=len(seq))
 
     # Calculate final scores
     score_df = score(dssp=dssp, anchor=anchor_df, shannon=shannon, config=config)
