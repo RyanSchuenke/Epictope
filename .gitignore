@@ -2,3 +2,4 @@ data/
 outputs/
 ignore/
 .Rprofile
+__pycache__
