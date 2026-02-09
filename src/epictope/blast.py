@@ -135,12 +135,15 @@ def blast(seq:str, db: str, folders:list[os.PathLike], blast_type: str = "blastp
     
     outfmt += custom_fmt
     
-    with tempfile.NamedTemporaryFile(mode='w', suffix=".fasta") as tmp:
+    with tempfile.NamedTemporaryFile(mode='w', suffix=".fasta", delete=False) as tmp:
         tmp.write(">query\n")
         tmp.write(seq+"\n")
-        tmp.flush()
-        
-        stdout = subprocess.check_output([blast_exe, '-db', db_path, '-query', tmp.name, '-outfmt', outfmt]).decode('utf-8')
+        tmp_name = tmp.name
+    
+    try:
+        stdout = subprocess.check_output([blast_exe, '-db', db_path, '-query', tmp_name, '-outfmt', outfmt]).decode('utf-8')
+    finally:
+        os.unlink(tmp_name)
     
     out = []
     for l in stdout.splitlines():
