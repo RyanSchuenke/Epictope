@@ -13,7 +13,7 @@ from os import PathLike
 from os.path import join
 from pandas import DataFrame
 
-def single_score(query:str, config_path:PathLike = None, custom_struct:PathLike = None, res_start:int = 1, graph:bool = False) -> DataFrame:
+def single_score(query:str, config_path:PathLike = None, custom_struct:PathLike = None, res_start:int = 1, plot:bool = False) -> DataFrame:
     """
     Function for running the main Epictope pipeline and calculating the 
     "least worst" sites for epitope insertion in a protein sequence.
@@ -26,8 +26,8 @@ def single_score(query:str, config_path:PathLike = None, custom_struct:PathLike 
     :type custom_struct: PathLike
     :param res_start: 1 indexed starting residue of the protein sequence in the custom_struct file relative to the actual protein sequence
     :type res_start: int
-    :param graph: boolean value to determine if the min score should be plotted
-    :type graph: bool
+    :param plot: boolean value to determine if the min score should be plotted
+    :type plot: bool
     :return: final score dataframe containing shannon entropy, dssp, and iupred2/anchor2 data
     :rtype: DataFrame
     """
@@ -91,8 +91,8 @@ def single_score(query:str, config_path:PathLike = None, custom_struct:PathLike 
     output_file = join(folders["output_folder"], query+"_score")
     score_df.to_csv(output_file+".csv")
 
-    # Graph scores
-    if graph:
+    # plot scores
+    if plot:
         plot_scores(scores_file=output_file+".csv")
     
     return score_df
