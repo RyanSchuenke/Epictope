@@ -14,7 +14,7 @@ def plot_scores(scores_file: os.PathLike, output_file:os.PathLike = None) -> Non
     if not os.path.exists(scores_file):
         raise Exception("Score file '"+scores_file+"' not found")
     if not output_file:
-        output_file = os.path.splitext(scores_file)[0]+".tiff"
+        output_file = os.path.splitext(scores_file)[0]+".png"
     
     plot_df = pd.read_csv(scores_file).set_index(["position", "aa"])
     fig, ax = plt.subplots(1,1)
