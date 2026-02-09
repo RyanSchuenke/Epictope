@@ -11,7 +11,7 @@ authors = [
 description = "Epitope tagging site prediction tool"
 readme = "README.md"
 requires-python = ">=3.9" # required version not determined
-dependencies = ["pandas", "matplotlib", "requests", "pyyaml"]
+dependencies = ["pandas", "matplotlib", "requests", "pyyaml", "biopython"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
