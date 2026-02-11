@@ -77,5 +77,5 @@ def norm_shannon(shannon: pd.DataFrame) -> pd.DataFrame:
     :rtype: DataFrame
     """
     # divide by max possible entropy: log_2(20) = 4.321928
-    shannon["norm_entropy"] = shannon["shannon"] / 4.321928
+    shannon["normalized_entropy"] = shannon["shannon"] / 4.321928
     return shannon
