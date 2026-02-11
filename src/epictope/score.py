@@ -23,7 +23,7 @@ def score(dssp:pd.DataFrame, anchor:pd.DataFrame, shannon:pd.DataFrame, config:d
     anchor = anchor_score(anchor)
     shannon = norm_shannon(shannon)
     
-    score_features = ["inv_anchor2","norm_entropy", "rsa", "ss_score"]
+    score_features = ["inv_anchor2","normalized_entropy", "rsa", "ss_score"]
     
     score_df = pd.concat([anchor, shannon, dssp], axis=1, join="outer")
     score_df = score_df.infer_objects()
