@@ -1,7 +1,29 @@
 import requests
 import pandas as pd
+import os
+import sys
 
-def iupred_anchor(uniprot_accession: str) -> pd.DataFrame:
+def config_iupred2a() -> bool:
+    """
+    Attempts to add the iupred2a directory to path from "IUPRED2A_PATH" environment variable or current working directory
+    
+    :return: boolean representing if iupred2a package was found or not
+    :rtype: bool
+    """
+    anchor_path = os.getenv("IUPRED2A_PATH")
+    
+    if anchor_path:
+        sys.path.insert(0, anchor_path)
+        return True
+    else:
+        # no environment variable set
+        if os.path.exists(os.path.join(os.getcwd(), "iupred2a")):
+            sys.path.insert(0, os.path.join(os.getcwd(), "iupred2a"))
+            return True
+    # not found in current directory
+    return False
+
+def remote_iupred_anchor(uniprot_accession: str) -> pd.DataFrame:
     """
     Retrieve the iupred2/anchor2 data from the iupred2 server
     
@@ -13,9 +35,23 @@ def iupred_anchor(uniprot_accession: str) -> pd.DataFrame:
     iupred_url = "https://iupred2a.elte.hu/iupred2a/anchor/"+uniprot_accession+".json"
     iupred_json = requests.get(iupred_url).json()
     
-    anchor_df = pd.DataFrame(index=range(len(iupred_json["sequence"])), columns=["position", "aa", "iupred2", "anchor2"])
-    for i in range(len(iupred_json["sequence"])):
-        anchor_df.loc[i] = [i+1, iupred_json["sequence"][i], iupred_json["iupred2"][i], iupred_json["anchor2"][i]]
+    anchor_df = pd.DataFrame({"position":range(1,len(iupred_json["sequence"])+1), "aa":list(iupred_json["sequence"]), "iupred2":iupred_json["iupred2"], "anchor2":iupred_json["anchor2"]})
+    return anchor_df.set_index(["position", "aa"])
+
+def iupred_anchor(seq: str) -> pd.DataFrame:
+    """
+    Calculate the iupred2/anchor2 scores with a local installation of iupred2a
+    
+    :param seq: query protein sequence iupred2/anchor2 calculates on
+    :type seq: str
+    :return: dataframe containing iupred2 and anchor2 scores
+    :rtype: DataFrame
+    """
+    from iupred2a_lib import iupred, anchor2
+    iupred_score = iupred(seq)[0]
+    anchor_score = anchor2(seq)
+    
+    anchor_df = pd.DataFrame({"position":range(1,len(seq)+1),"aa":list(seq),"iupred2a":iupred_score, "anchor2":anchor_score})
     return anchor_df.set_index(["position", "aa"])
 
 def anchor_score(anchor_df:pd.DataFrame) -> pd.DataFrame:

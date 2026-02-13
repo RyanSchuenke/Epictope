@@ -4,12 +4,10 @@ import subprocess
 from Bio.PDB.DSSP import make_dssp_dict
 import pandas as pd
 
-def dssp_command(query: str, structure_file: os.PathLike, res_start:int = 1) -> pd.DataFrame:
+def dssp_command(structure_file: os.PathLike, res_start:int = 1) -> pd.DataFrame:
     """
     Runs dssp on a provided structure file
     
-    :param query: accession of the protein dssp is run on
-    :type query: str
     :param structure_file: pdb or mmCIF file input to the dssp command
     :type structure_file: os.PathLike
     :param res_start: first residue in the true sequence which appears in the structure file (1 indexed)
@@ -19,7 +17,7 @@ def dssp_command(query: str, structure_file: os.PathLike, res_start:int = 1) -> 
     """
     res_start -= 1
     if not os.path.exists(structure_file):
-        raise Exception("Missing structure file for "+query)
+        raise Exception("Missing structure file")
     dssp_exe = find_exe("mkdssp")
     out_file = os.path.splitext(structure_file)[0]+".dssp"
     subprocess.run([dssp_exe, structure_file, out_file])

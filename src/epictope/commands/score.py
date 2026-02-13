@@ -2,9 +2,10 @@ import argparse
 from epictope.single_score import single_score
 def add_parser(subparsers:argparse.ArgumentParser):
     parser = subparsers.add_parser("score", help="Calculate the scores for epictope site insertion for a protein from Uniprot", 
-                                   formatter_class=argparse.RawTextHelpFormatter)
+                                   formatter_class=argparse.RawTextHelpFormatter, 
+                                   epilog="a local installation of iupred2a can be accessed in the working directory or provided with the environment variable 'IUPRED2A_PATH'.")
     
-    parser.add_argument(dest="query", help="Uniprot accession of query sequence", type=str)
+    parser.add_argument(dest="query", help="Uniprot accession or fasta file path of query sequence. If fasta file used, a custom structure is also required.", type=str)
 
     parser.add_argument("-p", "--plot", dest="plot", action="store_true", required = False, 
                     help = "flag for whether the outputted score file should be plotted"
@@ -31,4 +32,4 @@ def add_parser(subparsers:argparse.ArgumentParser):
     parser.set_defaults(func=run)
 
 def run(args) -> None:
-    single_score(query=args.query.upper(), config_path=args.config, custom_struct=args.custom_struct, res_start=args.res_start, plot=args.plot)
+    single_score(query=args.query, config_path=args.config, custom_struct=args.custom_struct, res_start=args.res_start, plot=args.plot)

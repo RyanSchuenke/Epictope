@@ -2,28 +2,28 @@ from epictope.setup_folders import setup_folders
 from epictope.query_uniprot import query_uniprot
 from epictope.fetch_alphafold import fetch_alphafold
 from epictope.dssp import dssp_command
-from epictope.anchor import iupred_anchor
+from epictope.anchor import remote_iupred_anchor, config_iupred2a, iupred_anchor
 from epictope.blast import install_db, blast, fetch_seq
 from epictope.muscle import muscle
 from epictope.shannon import shannon_entropy
 from epictope.score import score
 from epictope.plot_scores import plot_scores
 from epictope.config import load_config
-from os import PathLike
-from os.path import join
+import os
+from Bio import SeqIO
 from pandas import DataFrame
 
-def single_score(query:str, config_path:PathLike = None, custom_struct:PathLike = None, res_start:int = 1, plot:bool = False) -> DataFrame:
+def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.PathLike = None, res_start:int = 1, plot:bool = False) -> DataFrame:
     """
     Function for running the main Epictope pipeline and calculating the 
     "least worst" sites for epitope insertion in a protein sequence.
     
-    :param query: Uniprot accession of the protein being scored
+    :param query: Uniprot accession or fasta file of the protein being scored
     :type query: str
     :param config_path: Path to the config.yml file
-    :type config_path: PathLike
+    :type config_path: os.PathLike
     :param custom_struct: Path to a user provided structure file in pdb or cif format for the query protein
-    :type custom_struct: PathLike
+    :type custom_struct: os.PathLike
     :param res_start: 1 indexed starting residue of the protein sequence in the custom_struct file relative to the actual protein sequence
     :type res_start: int
     :param plot: boolean value to determine if the min score should be plotted
@@ -37,6 +37,8 @@ def single_score(query:str, config_path:PathLike = None, custom_struct:PathLike 
         res_start = 1
 
     config = load_config(config_path)
+    
+    has_iupred2a = config_iupred2a()
 
 
     ## Setup flders and make blast databases
@@ -44,15 +46,26 @@ def single_score(query:str, config_path:PathLike = None, custom_struct:PathLike 
 
     install_db(species=config["species"], cds_folder=folders["cds_folder"], force=False)
 
-    ## Retrieve uniprot data and query sequence
-    uniprot_data = query_uniprot(query=query)
-    seq = uniprot_data["sequence"]["value"]
+    if os.path.exists(query):
+        ## Extract query sequence from custom FASTA file 
+        if not has_iupred2a:
+            raise Exception("Cannot use custom fasta sequence file without a local installation of iupred2a")
+        if not custom_struct:
+            # maybe allow calling alphafold on the sequence eventually
+            raise Exception("Cannot use custom fasta sequence file without a custom structure file")
+        query_file = query
+        seq = str(SeqIO.read(query_file, "fasta").seq)
+        query = os.path.splitext(os.path.basename(query))[0]
+    else:
+        ## Retrieve uniprot data and query sequence
+        uniprot_data = query_uniprot(query=query)
+        seq = uniprot_data["sequence"]["value"]
 
 
     ## AlphaFold / DSSP
     if custom_struct:
         print("using custom structure file")
-        dssp = dssp_command(query=query, structure_file=custom_struct, res_start=res_start)
+        dssp = dssp_command(structure_file=custom_struct, res_start=res_start)
         
         if not seq[res_start-1:res_start-1+len(dssp)] == ("".join(dssp.index.get_level_values(1))):
             raise Exception("structure AA sequence does not match protein sequence with starting position "+str(res_start))
@@ -64,11 +77,16 @@ def single_score(query:str, config_path:PathLike = None, custom_struct:PathLike 
                 break
         else:
             alphafold_file = fetch_alphafold(query=query, model_folder=folders["model_folder"])
-        dssp = dssp_command(query=query, structure_file=alphafold_file)
+        dssp = dssp_command(structure_file=alphafold_file)
 
 
     ## IUPred / Anchor
-    anchor_df = iupred_anchor(uniprot_accession=query)
+    if has_iupred2a:
+        # default to local if iupred2a available
+        anchor_df = iupred_anchor(seq=seq)
+    else:
+        # remote lookup via Uniprot accession if no iupred2a provided
+        anchor_df = remote_iupred_anchor(uniprot_accession=query)
 
 
     ## Shannon entropy
@@ -88,7 +106,7 @@ def single_score(query:str, config_path:PathLike = None, custom_struct:PathLike 
     score_df = score(dssp=dssp, anchor=anchor_df, shannon=shannon, config=config)
 
     # Save output file
-    output_file = join(folders["output_folder"], query+"_score")
+    output_file = os.path.join(folders["output_folder"], query+"_score")
     score_df.to_csv(output_file+".csv")
 
     # plot scores
