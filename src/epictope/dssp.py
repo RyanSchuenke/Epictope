@@ -3,6 +3,8 @@ import os
 import subprocess
 from Bio.PDB.DSSP import make_dssp_dict
 import pandas as pd
+import logging
+logger = logging.getLogger(__name__)
 
 def dssp_command(structure_file: os.PathLike, res_start:int = 1) -> pd.DataFrame:
     """
@@ -17,6 +19,7 @@ def dssp_command(structure_file: os.PathLike, res_start:int = 1) -> pd.DataFrame
     """
     res_start -= 1
     if not os.path.exists(structure_file):
+        logger.error("Missing structure file")
         raise Exception("Missing structure file")
     dssp_exe = find_exe("mkdssp")
     out_file = os.path.splitext(structure_file)[0]+".dssp"

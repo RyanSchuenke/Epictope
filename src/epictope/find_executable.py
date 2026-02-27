@@ -1,5 +1,7 @@
 from shutil import which
 import os
+import logging
+logger = logging.getLogger(__name__)
 
 def find_exe(cmd:str="") -> os.PathLike:
     """
@@ -13,5 +15,6 @@ def find_exe(cmd:str="") -> os.PathLike:
     exe = which(cmd)
     if exe:
         return exe
-    else: 
+    else:
+        logger.error("Executable for "+cmd+" not found.")
         raise Exception("Executable for "+cmd+" not found.")

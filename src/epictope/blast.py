@@ -5,6 +5,8 @@ import shutil
 import ftplib
 import tempfile
 from epictope.find_executable import find_exe
+import logging
+logger = logging.getLogger(__name__)
 
 def ftp_download(species:str, cds_folder:os.PathLike, release: str = "release-108") -> os.PathLike:
     """
@@ -29,6 +31,7 @@ def ftp_download(species:str, cds_folder:os.PathLike, release: str = "release-10
                 break
     except Exception:
         ftp.quit()
+        logger.error("Could not find ftp link for species "+species)
         raise Exception("Could not find ftp link for species "+species)
     ftp.quit()
     return download_link
@@ -59,11 +62,13 @@ def fetch_db(db:str, cds_folder:os.PathLike) -> os.PathLike:
     :rtype: os.PathLike
     """
     if not db:
+        logger.error("No BLAST database specified")
         raise Exception("No BLAST database specified")
     for file in os.listdir(cds_folder):
         if os.path.isfile(os.path.join(cds_folder, file)) and file.lower().startswith(db) and file.endswith(".all.fa"):
             return os.path.join(cds_folder, file)
     else:
+        logger.error("Blast database for species "+db+" not found")
         raise Exception("Blast database for species "+db+" not found")
 
 def install_db(species:list[str], cds_folder:os.PathLike, force:bool = False) -> None:
@@ -81,13 +86,13 @@ def install_db(species:list[str], cds_folder:os.PathLike, force:bool = False) ->
         try:
             if not force:
                 fetch_db(s.lower(), cds_folder)
-                print(f"Database for '{s}' already exists, skipping")
+                logger.info(f"Database for '{s}' already exists, skipping")
                 continue
         except Exception:
             pass
         file = ftp_download(s.lower(), cds_folder)
         make_protein_db(os.path.join(cds_folder, file))
-    print("all databases installed")
+    logger.info("all databases installed")
 
 def fetch_seq(seq_id:str, db:str, cds_folder:os.PathLike, outfmt:str = "%s") -> str:
     """

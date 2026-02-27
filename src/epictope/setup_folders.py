@@ -10,6 +10,7 @@ def setup_folders() -> dict[os.PathLike]:
     folders = {}
     folders["data_folder"] = "data"
     folders["output_folder"] = "outputs"
+    folders["logs_folder"] = "logs"
     
     # structure and dssp folder
     folders["model_folder"] = os.path.join(folders["data_folder"],"models")

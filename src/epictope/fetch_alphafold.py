@@ -1,5 +1,7 @@
 import os
 import requests
+import logging
+logger = logging.getLogger(__name__)
 
 def fetch_alphafold(protein_id:str, model_folder:os.PathLike) -> os.PathLike:
     """
@@ -21,7 +23,7 @@ def fetch_alphafold(protein_id:str, model_folder:os.PathLike) -> os.PathLike:
     output_path = os.path.join(model_folder, file_name)
     
     if os.path.isfile(output_path):
-        print("mmCIF for "+protein_id+" already exists.")
+        logger.info("mmCIF for "+protein_id+" already exists.")
         return output_path
     try:
         r = requests.get(url=base_url+file_name)
@@ -29,6 +31,6 @@ def fetch_alphafold(protein_id:str, model_folder:os.PathLike) -> os.PathLike:
         with open(output_path, 'wb') as file: 
             file.writelines(r)
     except Exception as err:
-        print("Error while downloading: ", protein_id)
+        logger.error("Error while downloading: ", protein_id)
         raise err
     return output_path

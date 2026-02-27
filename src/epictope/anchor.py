@@ -2,6 +2,8 @@ import requests
 import pandas as pd
 import os
 import sys
+import logging
+logger = logging.getLogger(__name__)
 
 def config_iupred2a() -> bool:
     """
@@ -14,11 +16,13 @@ def config_iupred2a() -> bool:
     
     if anchor_path:
         sys.path.insert(0, anchor_path)
+        logger.info("Using anchor2 at '"+anchor_path+"'")
         return True
     else:
         # no environment variable set
         if os.path.exists(os.path.join(os.getcwd(), "iupred2a")):
             sys.path.insert(0, os.path.join(os.getcwd(), "iupred2a"))
+            logger.info("Using anchor2 at '"+os.path.join(os.getcwd(), "iupred2a")+"'")
             return True
     # not found in current directory
     return False

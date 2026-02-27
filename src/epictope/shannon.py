@@ -1,6 +1,8 @@
 from Bio.Align import MultipleSeqAlignment
 from math import log2
 import pandas as pd
+import logging
+logger = logging.getLogger(__name__)
 
 def pos_shannon_entropy(seq:list[str], no_gap:bool = False) -> int:
     """
@@ -55,6 +57,7 @@ def shannon_entropy(msa:MultipleSeqAlignment, query:str, seq_len:int) -> pd.Data
             query_index = i
             break
     else:
+        logger.error("Query sequence not found in MSA")
         raise Exception("Query sequence not found in MSA")
     
     entropy = pd.DataFrame(index=range(seq_len), columns=["position", "aa", "shannon"])

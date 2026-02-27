@@ -3,6 +3,8 @@ import subprocess
 import tempfile
 from epictope.find_executable import find_exe
 from Bio import AlignIO, Align
+import logging
+logger = logging.getLogger(__name__)
 
 def muscle(query:str, seqs:dict[str], output_folder:os.PathLike) -> Align.MultipleSeqAlignment:
     """
@@ -27,7 +29,7 @@ def muscle(query:str, seqs:dict[str], output_folder:os.PathLike) -> Align.Multip
         tmp_name = tmp.name
         
     try:
-        subprocess.run([muscle_exe, "-align", tmp.name, "-output", output_file])
+        subprocess.run([muscle_exe, "-align", tmp.name, "-output", output_file], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     finally:
         os.unlink(tmp_name)
         

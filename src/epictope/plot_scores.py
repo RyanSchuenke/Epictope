@@ -1,6 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+import logging
+logger = logging.getLogger(__name__)
 
 def plot_scores(scores_file: os.PathLike, output_file:os.PathLike = None) -> None:
     """
@@ -12,6 +14,7 @@ def plot_scores(scores_file: os.PathLike, output_file:os.PathLike = None) -> Non
     :type output_file: os.PathLike
     """
     if not os.path.exists(scores_file):
+        logger.error("Score file '"+scores_file+"' not found")
         raise Exception("Score file '"+scores_file+"' not found")
     if not output_file:
         output_file = os.path.splitext(scores_file)[0]+".png"
@@ -56,6 +59,7 @@ def plot_score_components(scores_file: os.PathLike, output_file:os.PathLike = No
     :type score_components: list[str]
     """
     if not os.path.exists(scores_file):
+        logger.error("Score file '"+scores_file+"' not found")
         raise Exception("Score file '"+scores_file+"' not found")
     if not output_file:
         output_file = os.path.splitext(scores_file)[0]+"_components.png"

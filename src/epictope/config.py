@@ -1,6 +1,8 @@
 from os.path import exists
 from os import PathLike
 from yaml import safe_load
+import logging
+logger = logging.getLogger(__name__)
 
 DEFAULT_CONFIG = {
     # define species to run MSA against
@@ -76,11 +78,12 @@ def load_config(config_path:PathLike = None) -> dict:
     config = DEFAULT_CONFIG.copy()
     if config_path:
         if exists(config_path):
-            print("using custom config file from '"+config_path+"'")
+            logger.info("using custom config file from '"+config_path+"'")
             with open(config_path, 'r') as f:
                 config.update(safe_load(f))
         else:
+            logger.error("Config file not found at '"+config_path+"'")
             raise Exception("Config file not found at '"+config_path+"'")
     else: 
-        print("using default config")
+        logger.info("using default config")
     return config

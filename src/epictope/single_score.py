@@ -12,6 +12,8 @@ from epictope.config import load_config
 import os
 from Bio import SeqIO
 from pandas import DataFrame
+import logging
+logger = logging.getLogger(__name__)
 
 def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.PathLike = None, res_start:int = 1, plot:bool = False) -> DataFrame:
     """
@@ -32,6 +34,7 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
     :rtype: DataFrame
     """
     if not custom_struct and res_start != 1:
+        logger.error("Cannot set starting residue without a custom structure")
         raise Exception("Cannot set starting residue without a custom structure")
     elif not res_start:
         res_start = 1
@@ -49,9 +52,11 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
     if os.path.exists(query):
         ## Extract query sequence from custom FASTA file 
         if not has_iupred2a:
+            logger.error("Cannot use custom fasta sequence file without a local installation of iupred2a")
             raise Exception("Cannot use custom fasta sequence file without a local installation of iupred2a")
         if not custom_struct:
             # maybe allow calling alphafold on the sequence eventually
+            logger.error("Cannot use custom fasta sequence file without a custom structure file")
             raise Exception("Cannot use custom fasta sequence file without a custom structure file")
         query_file = query
         seq = str(SeqIO.read(query_file, "fasta").seq)
@@ -64,10 +69,11 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
 
     ## AlphaFold / DSSP
     if custom_struct:
-        print("using custom structure file")
+        logger.info("using custom structure file")
         dssp = dssp_command(structure_file=custom_struct, res_start=res_start)
         
         if not seq[res_start-1:res_start-1+len(dssp)] == ("".join(dssp.index.get_level_values(1))):
+            logger.error("structure AA sequence does not match protein sequence with starting position "+str(res_start))
             raise Exception("structure AA sequence does not match protein sequence with starting position "+str(res_start))
     else:
         # retrieve the alphafold structure by the cross-reference if in uniprot data, otherwise attempt with accession directly
