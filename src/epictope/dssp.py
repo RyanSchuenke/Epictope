@@ -1,12 +1,13 @@
 from epictope.find_executable import find_exe
 import os
 import subprocess
+import tempfile
 from Bio.PDB.DSSP import make_dssp_dict
 import pandas as pd
 import logging
 logger = logging.getLogger(__name__)
 
-def dssp_command(structure_file: os.PathLike, res_start:int = 1) -> pd.DataFrame:
+def dssp_command(structure_file: os.PathLike, res_start:int = 1, save_intermediates: bool = False) -> pd.DataFrame:
     """
     Runs dssp on a provided structure file
     
@@ -23,10 +24,11 @@ def dssp_command(structure_file: os.PathLike, res_start:int = 1) -> pd.DataFrame
         raise Exception("Missing structure file")
     dssp_exe = find_exe("mkdssp")
     out_file = os.path.splitext(structure_file)[0]+".dssp"
-    subprocess.run([dssp_exe, structure_file, out_file])
+    with open(out_file, 'w+t') if save_intermediates else tempfile.NamedTemporaryFile(mode='w+t', suffix=".dssp") as file_out:
+        subprocess.run([dssp_exe, structure_file, file_out.name])
+        # construct dssp dataframe from output file
+        dssp = make_dssp_dict(file_out.name)[0]
     
-    # construct dssp dataframe from saved output file
-    dssp = make_dssp_dict(out_file)[0]
     dssp_out = pd.DataFrame(index=range(len(dssp)+res_start), columns=["aa", "structure", "acc", "phi", "psi", "position"])
     for key, value in dssp.items():
         dssp_out.loc[key[1][1]-1+res_start] = list(value[:6])
