@@ -14,7 +14,7 @@ from pandas import DataFrame
 import logging
 logger = logging.getLogger(__name__)
 
-def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.PathLike = None, res_start:int = 1, plot:bool = False) -> DataFrame:
+def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.PathLike = None, plot:bool = False) -> DataFrame:
     """
     Function for running the main Epictope pipeline and calculating the 
     "least worst" sites for epitope insertion in a protein sequence.
@@ -25,19 +25,11 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
     :type config_path: os.PathLike
     :param custom_struct: Path to a user provided structure file in pdb or cif format for the query protein
     :type custom_struct: os.PathLike
-    :param res_start: 1 indexed starting residue of the protein sequence in the custom_struct file relative to the actual protein sequence
-    :type res_start: int
     :param plot: boolean value to determine if the min score should be plotted
     :type plot: bool
     :return: final score dataframe containing shannon entropy, dssp, and iupred2/anchor2 data
     :rtype: DataFrame
     """
-    if not custom_struct and res_start != 1:
-        logger.error("Cannot set starting residue without a custom structure")
-        raise Exception("Cannot set starting residue without a custom structure")
-    elif not res_start:
-        res_start = 1
-
     config = load_config(config_path)
     
     has_iupred2a = config_iupred2a()
@@ -69,11 +61,14 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
     ## AlphaFold / DSSP
     if custom_struct:
         logger.info("using custom structure file")
-        dssp = dssp_command(structure_file=custom_struct, res_start=res_start)
+        struct_seq = str(list(SeqIO.parse(custom_struct, format= "cif-seqres"))[0].seq)
         
-        if not seq[res_start-1:res_start-1+len(dssp)] == ("".join(dssp.index.get_level_values(1))):
-            logger.error("structure AA sequence does not match protein sequence with starting position "+str(res_start))
-            raise Exception("structure AA sequence does not match protein sequence with starting position "+str(res_start))
+        # Find the starting index of struct_seq in seq
+        start_idx = seq.find(struct_seq)
+        if start_idx == -1:
+            logger.error("The structure sequence is not found in the protein sequence")
+            raise Exception("The structure sequence is not found in the protein sequence")
+        dssp = dssp_command(structure_file=custom_struct, res_start=start_idx)
     else:
         # retrieve the alphafold structure by the cifUrl
         alphafold_file = fetch_alphafold(model_url = alphafold_uniprot_data["cifUrl"], model_folder=folders["model_folder"])

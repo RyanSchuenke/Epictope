@@ -22,14 +22,10 @@ def add_parser(subparsers:argparse.ArgumentParser):
     custom_struct_group = parser.add_argument_group(title='custom_structure', description='Arguments for custom structure input')
 
     custom_struct_group.add_argument("-s", "--structure", dest="custom_struct", required=False,
-                    help="custom cif or pdb structure file",
+                    help="custom cif or pdb structure file. Currently tolerates missing the beginning or end of the protein, but not having gaps in the middle of the structure",
                     default = None,)
-
-    custom_struct_group.add_argument("-r", "--residue", dest="res_start", required=False,
-                    help="starting amino acid position in structure file (1 indexed)",
-                    default=1, type=int)
     
     parser.set_defaults(func=run)
 
 def run(args) -> None:
-    single_score(query=args.query, config_path=args.config, custom_struct=args.custom_struct, res_start=args.res_start, plot=args.plot)
+    single_score(query=args.query, config_path=args.config, custom_struct=args.custom_struct, plot=args.plot)
