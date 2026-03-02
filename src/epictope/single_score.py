@@ -1,6 +1,5 @@
 from epictope.setup_folders import setup_folders
-from epictope.query_uniprot import query_uniprot
-from epictope.fetch_alphafold import fetch_alphafold
+from epictope.fetch_alphafold import query_alphafold_uniprot, fetch_alphafold
 from epictope.dssp import dssp_command
 from epictope.anchor import remote_iupred_anchor, config_iupred2a, iupred_anchor
 from epictope.blast import install_db, blast, fetch_seq
@@ -63,8 +62,8 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
         query = os.path.splitext(os.path.basename(query))[0]
     else:
         ## Retrieve uniprot data and query sequence
-        uniprot_data = query_uniprot(query=query)
-        seq = uniprot_data["sequence"]["value"]
+        alphafold_uniprot_data = query_alphafold_uniprot(query=query)
+        seq = alphafold_uniprot_data["sequence"]
 
 
     ## AlphaFold / DSSP
@@ -76,13 +75,8 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
             logger.error("structure AA sequence does not match protein sequence with starting position "+str(res_start))
             raise Exception("structure AA sequence does not match protein sequence with starting position "+str(res_start))
     else:
-        # retrieve the alphafold structure by the cross-reference if in uniprot data, otherwise attempt with accession directly
-        for cross_ref in uniprot_data["uniProtKBCrossReferences"]:
-            if cross_ref["database"] == "AlphaFoldDB":
-                alphafold_file = fetch_alphafold(protein_id=cross_ref["id"], model_folder=folders["model_folder"])
-                break
-        else:
-            alphafold_file = fetch_alphafold(query=query, model_folder=folders["model_folder"])
+        # retrieve the alphafold structure by the cifUrl
+        alphafold_file = fetch_alphafold(model_url = alphafold_uniprot_data["cifUrl"], model_folder=folders["model_folder"])
         dssp = dssp_command(structure_file=alphafold_file)
 
 

@@ -3,7 +3,30 @@ import requests
 import logging
 logger = logging.getLogger(__name__)
 
-def fetch_alphafold(protein_id:str, model_folder:os.PathLike) -> os.PathLike:
+def query_alphafold_uniprot(query:str) -> dict:
+    """
+    Query Alphafold API for the uniprot query protein sequence and alphafold information
+    
+    :param query: Uniprot accession of the protein to search for
+    :type query: str
+    :param fields: list of fields to be included in the response
+    :type fields: list
+    :return: response dictionary from the uniprot REST api
+    :rtype: dict
+    """
+    if len(query) == 0:
+        raise Exception("cannot have a 'query' of length zero")
+    else: 
+        response = requests.get(url = "https://alphafold.ebi.ac.uk/api/prediction/"+query)
+        try:
+            response_dict = response.json()[0]
+        except:
+            logger.error("Could not find "+query+" in alphafold/uniprot database")
+            raise Exception("Could not find "+query+" in alphafold/uniprot database")
+    return response_dict
+
+
+def fetch_alphafold(model_url:str, model_folder:os.PathLike) -> os.PathLike:
     """
     Retrieves the alphafold predicted structure of the query protein from the alphafold database
     
@@ -14,23 +37,18 @@ def fetch_alphafold(protein_id:str, model_folder:os.PathLike) -> os.PathLike:
     :return: path to the downloaded mmCIF file
     :rtype: PathLike
     """
-    base_url = "https://alphafold.ebi.ac.uk/files/"
-    file_prefix = "AF-"
-    version_suffix = "-F1-model_v6.cif"
-    
-    file_name = "".join([file_prefix, protein_id, version_suffix])
-    
+    file_name = model_url.split('/')[-1]
     output_path = os.path.join(model_folder, file_name)
     
     if os.path.isfile(output_path):
-        logger.info("mmCIF for "+protein_id+" already exists.")
+        logger.info("mmCIF for "+file_name+" already exists.")
         return output_path
     try:
-        r = requests.get(url=base_url+file_name)
+        r = requests.get(url=model_url)
         r.raise_for_status()
-        with open(output_path, 'wb') as file: 
-            file.writelines(r)
+        with open(output_path, 'w') as file: 
+            file.writelines(r.text)
     except Exception as err:
-        logger.error("Error while downloading: ", protein_id)
+        logger.error("Error while downloading: ", file_name)
         raise err
     return output_path
