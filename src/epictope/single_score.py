@@ -61,8 +61,14 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
     ## AlphaFold / DSSP
     if custom_struct:
         logger.info("using custom structure file")
-        struct_seq = str(list(SeqIO.parse(custom_struct, format= "cif-seqres"))[0].seq)
-        
+        try:
+            struct_seq = str(list(SeqIO.parse(custom_struct, format= "cif-seqres"))[0].seq)
+        except:
+            try:
+                struct_seq = str(list(SeqIO.parse(custom_struct, format= "pdb-atom"))[0].seq)
+            except Exception as err:
+                logger.error("Failed to open structure file. Please use a .pdb or .cif file")
+                raise err
         # Find the starting index of struct_seq in seq
         start_idx = seq.find(struct_seq)
         if start_idx == -1:
