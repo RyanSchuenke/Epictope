@@ -37,11 +37,17 @@ def main() -> None:
     # Create timestamp string
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    # Create unique log filename
-    if args.custom_struct:
-        log_filename='logs/'+os.path.basename(args.query)+'_'+os.path.basename(args.custom_struct)+'_'+timestamp+'.log'
+    if args.command == "score":
+        # Create unique log filename
+        if args.custom_struct:
+            log_filename='logs/score_'+os.path.basename(args.query)+'_'+os.path.basename(args.custom_struct)+'_'+timestamp+'.log'
+        else:
+            log_filename='logs/'+os.path.basename(args.query)+'_'+timestamp+'.log'
+    elif args.command == "plot":
+        log_filename='logs/plot_'+os.path.basename(args.score_file)+'_'+timestamp+'.log'
     else:
-        log_filename='logs/'+os.path.basename(args.query)+'_'+timestamp+'.log'
+        parser.error(f"Unknown command: {args.command}")
+
 
     # Configure logging
     logging.basicConfig(
