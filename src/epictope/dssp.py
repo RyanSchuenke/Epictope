@@ -7,7 +7,7 @@ import pandas as pd
 import logging
 logger = logging.getLogger(__name__)
 
-def dssp_command(structure_file: os.PathLike, res_start:int = 1, save_intermediates: bool = False) -> pd.DataFrame:
+def dssp_command(structure_file: os.PathLike, res_start:int = 0, save_intermediates: bool = False) -> pd.DataFrame:
     """
     Runs dssp on a provided structure file
     
