@@ -48,7 +48,11 @@ def make_protein_db(gz_file:str) -> None:
         with open(file, 'wb') as f_out:
             shutil.copyfileobj(f_in, f_out)
     make_db_exe = find_exe("makeblastdb")
-    subprocess.run([make_db_exe, "-in", file, "-dbtype", "prot", "-parse_seqids"])
+    result = subprocess.run([make_db_exe, "-in", file, "-dbtype", "prot", "-parse_seqids"], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    if result.returncode != 0:
+        error_msg = result.stderr.decode('utf-8')
+        logger.error(f"Failed to create BLAST database: {error_msg}")
+        raise Exception(f"Failed to create BLAST database: {error_msg}")
 
 def fetch_db(db:str, cds_folder:os.PathLike) -> os.PathLike:
     """
@@ -68,7 +72,7 @@ def fetch_db(db:str, cds_folder:os.PathLike) -> os.PathLike:
         if os.path.isfile(os.path.join(cds_folder, file)) and file.lower().startswith(db) and file.endswith(".all.fa"):
             return os.path.join(cds_folder, file)
     else:
-        logger.error("Blast database for species "+db+" not found")
+        logger.warning("Blast database for species "+db+" not found")
         raise Exception("Blast database for species "+db+" not found")
 
 def install_db(species:list[str], cds_folder:os.PathLike, force:bool = False) -> None:
@@ -91,6 +95,7 @@ def install_db(species:list[str], cds_folder:os.PathLike, force:bool = False) ->
         except Exception:
             pass
         file = ftp_download(s.lower(), cds_folder)
+        logger.info(f"Making database with '{s}'")
         make_protein_db(os.path.join(cds_folder, file))
     logger.info("all databases installed")
 
