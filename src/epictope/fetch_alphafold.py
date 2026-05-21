@@ -3,6 +3,22 @@ import requests
 import logging
 logger = logging.getLogger(__name__)
 
+def is_canonical(accession:str) -> bool:
+    """
+    Check if the isoform is the canonical isoform or not
+    
+    :param fields: uniprot isoform accession
+    :type fields: str
+    :return: bool indicating if uniprot isoform accession is the canonical isoform
+    :rtype: bool
+    """
+    response = requests.get(url = "https://rest.uniprot.org/uniprotkb/"+accession.split('-')[0]).json()
+    for comment in response["comments"]:
+        if comment['commentType'] == "ALTERNATIVE PRODUCTS": 
+            # assumes canonical isoform is first on list which appears to hold true even when isoform 1 not canonical
+            return accession in comment["isoforms"][0]["isoformIds"]
+    raise Exception("No isoforms found for accession "+accession)
+
 def query_alphafold_uniprot(query:str) -> dict:
     """
     Query Alphafold API for the uniprot query protein sequence and alphafold information
@@ -17,7 +33,13 @@ def query_alphafold_uniprot(query:str) -> dict:
     if len(query) == 0:
         raise Exception("cannot have a 'query' of length zero")
     else: 
-        response = requests.get(url = "https://alphafold.ebi.ac.uk/api/prediction/"+query)
+        # Canonical isoform only stored without extra label, 
+        # so remove from accession if isoform is canonical, leave on otherwise
+        if '-' in query and is_canonical(query):
+            response = requests.get(url = "https://alphafold.ebi.ac.uk/api/prediction/"+query.split('-')[0])
+        else: 
+            response = requests.get(url = "https://alphafold.ebi.ac.uk/api/prediction/"+query)
+        
         try:
             response_dict = response.json()[0]
         except:
