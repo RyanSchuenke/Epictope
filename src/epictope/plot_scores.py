@@ -24,9 +24,10 @@ def plot_scores(scores_file: os.PathLike, output_file:os.PathLike = None) -> Non
     fig.set_size_inches(12,6)
     ax.set_xlim((1, plot_df.index.get_level_values("position").max()))
     ax.set_ylim((-0.05, 1.05))
+    ax.tick_params(axis='both', which='major', labelsize=12)
     ax.minorticks_on()
-    ax.set_xlabel("Amino Acid Position")
-    ax.set_ylabel("Score")
+    ax.set_xlabel("Amino Acid Position", fontsize=18)
+    ax.set_ylabel("Score", fontsize=18)
     
     plot_df = plot_df.dropna()
     window = 7
@@ -44,7 +45,7 @@ def plot_scores(scores_file: os.PathLike, output_file:os.PathLike = None) -> Non
         plot_df.loc[index,"min_moving_avg"] = plot_df.loc[index-half_window:]["min"].mean()
     
     ax.plot(plot_df.index.get_level_values("position"), plot_df["min_moving_avg"])
-    fig.savefig(output_file)
+    fig.savefig(output_file, bbox_inches='tight')
 
 def plot_score_components(scores_file: os.PathLike, output_file:os.PathLike = None, 
                           score_components:list[str] = ["rsa", "ss_score", "inv_anchor2", "normalized_entropy"]) -> None:
@@ -69,9 +70,10 @@ def plot_score_components(scores_file: os.PathLike, output_file:os.PathLike = No
     fig.set_size_inches(12,6)
     ax.set_xlim((1, plot_df.index.get_level_values("position").max()))
     ax.set_ylim((-0.05, 1.05))
+    ax.tick_params(axis='both', which='major', labelsize=12)
     ax.minorticks_on()
-    ax.set_xlabel("Amino Acid Position")
-    ax.set_ylabel("Score")
+    ax.set_xlabel("Amino Acid Position", fontsize=18)
+    ax.set_ylabel("Score", fontsize=18)
     
     plot_df = plot_df.dropna()
     window = 7
@@ -90,5 +92,5 @@ def plot_score_components(scores_file: os.PathLike, output_file:os.PathLike = No
             plot_df.loc[index,col+"_moving_avg"] = plot_df.loc[index-half_window:][col].mean()
         
         ax.plot(plot_df.index.get_level_values("position"), plot_df[col+"_moving_avg"], label=col)
-    fig.legend()
-    fig.savefig(output_file)
+    ax.legend(bbox_to_anchor=(0., .97, 1., .102), loc='upper center', ncols=4, mode="expand", borderaxespad=0., fontsize=12)
+    fig.savefig(output_file, bbox_inches='tight')
