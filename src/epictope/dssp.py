@@ -3,6 +3,8 @@ import os
 import subprocess
 import tempfile
 from Bio.PDB.DSSP import make_dssp_dict
+from Bio.PDB.MMCIF2Dict import MMCIF2Dict
+from Bio.PDB.mmcifio import MMCIFIO
 import pandas as pd
 import logging
 logger = logging.getLogger(__name__)
@@ -23,11 +25,26 @@ def dssp_command(structure_file: os.PathLike, res_start:int = 0, save_intermedia
         raise Exception("Missing structure file")
     dssp_exe = find_exe("mkdssp")
     out_file = os.path.splitext(structure_file)[0]+".dssp"
-    with open(out_file, 'w+t') if save_intermediates else tempfile.NamedTemporaryFile(mode='w+t', suffix=".dssp") as file_out:
-        subprocess.run([dssp_exe, structure_file, file_out.name])
-        # construct dssp dataframe from output file
-        dssp = make_dssp_dict(file_out.name)[0]
     
+    if structure_file.endswith('.cif'):
+        # remove checksum from alphafold mmcif files which can cause DSSP error
+        with tempfile.NamedTemporaryFile(mode='w+t', suffix=".cif") as structure_in:
+            mmcif_dict = MMCIF2Dict(structure_file)
+            if "_ma_target_ref_db_details.seq_db_sequence_checksum" in mmcif_dict:
+                mmcif_dict.pop("_ma_target_ref_db_details.seq_db_sequence_checksum")
+                io=MMCIFIO()
+                io.set_dict(mmcif_dict)
+                io.save(structure_in.name)
+                
+            with open(out_file, 'w+t') if save_intermediates else tempfile.NamedTemporaryFile(mode='w+t', suffix=".dssp") as file_out:
+                subprocess.run([dssp_exe, structure_in.name, file_out.name])
+                dssp = make_dssp_dict(file_out.name)[0]
+    else:
+        with open(out_file, 'w+t') if save_intermediates else tempfile.NamedTemporaryFile(mode='w+t', suffix=".dssp") as file_out:
+            subprocess.run([dssp_exe, structure_file, file_out.name])
+            dssp = make_dssp_dict(file_out.name)[0]
+    
+    # construct dssp dataframe from output file
     dssp_out = pd.DataFrame(index=range(len(dssp)+res_start), columns=["aa", "structure", "acc", "phi", "psi", "position"])
     for key, value in dssp.items():
         dssp_out.loc[key[1][1]-1+res_start] = list(value[:6])
