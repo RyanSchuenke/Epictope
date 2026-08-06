@@ -95,7 +95,10 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
     blast_hits = {query:seq}
     for species in config["species"]:
         results = blast(seq=seq, db=species, folders=folders)
-        blast_hits[species+"_"+results[0][1]] = fetch_seq(seq_id=results[0][1], db=species, cds_folder=folders["cds_folder"])
+        if results:
+            blast_hits[species+"_"+results[0][1]] = fetch_seq(seq_id=results[0][1], db=species, cds_folder=folders["cds_folder"])
+        else:
+            logger.info("no hits from " + species + " database")
 
     # 2. create multiple sequence alignment
     alignment = muscle(query=query, seqs=blast_hits, output_folder=folders["output_folder"])
