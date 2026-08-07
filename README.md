@@ -91,7 +91,7 @@ epictope_install.bat
 
 More detailed instructions for Windows can be found in the Detailed Installation for Windows [page](https://github.com/FriedbergLab/EpicTope/wiki/Detailed-Windows-Instructions)
 
-## Usage
+## R Usage
 
 Here, we provide usage examples to demonstrate how to use EpicTope. Each example includes a brief description and code snippets or commands to showcase the function. These examples assume the installation steps have been followed.
 
@@ -190,6 +190,67 @@ EpicTope searches for a "config.R" file in the working directory. If it doesn't 
 ### Frequently Asked Questions
 
 A growing FAQ can be found in our repository wiki [page](https://github.com/FriedbergLab/EpicTope/wiki/F.A.Q).
+
+## Python Usage
+
+Besides the original implementation in R, Epictope has been implemented as a python package. Currently, you can install python by cloning this repository, creating the conda environment with the install script, and installing the python package.
+
+For linux/mac:
+```bash
+git clone -b python-epictope https://github.com/RyanSchuenke/Epictope.git
+source install/mac_linux/epictope_install.sh
+conda activate epictope
+pip install -e .
+```
+
+For windows:
+```
+git clone -b python-epictope https://github.com/RyanSchuenke/Epictope.git
+install/windows/epictope_install.bat
+pip install -e .
+```
+
+To see how to use the python package, enter `epictope --help` in the terminal
+
+### Example 1A: Generating EpicTope predictions
+
+For our example, we investigate the Smad5 gene for Zebrafish. Searching for the protein transcript in [Uniprot](https://www.uniprot.org/uniprotkb/Q9W7E7/entry), we find it's UniprotID is "Q9W7E7". On windows, the commands are the same as for Linux, except Windows uses a backwards slash "\\" instead of a forward slash "/".
+Run the EpicTope workflow with the following commands in Anaconda Promp
+
+Run the EpicTope workflow with the following commands in the terminal.
+```bash
+conda activate epictope
+epictope score Q9W7E7
+```
+
+### Example 1b: Generating EpicTope predictions for custom AlphaFold structures
+
+Some UniProt entries do not have a corresponding AlphaFold prediction yet. To use a custom structure, first identify the Uniprot ID as described in example 1A, and select the "Sequence" tab (for example: [Q9W7E7](https://www.uniprot.org/uniprotkb/Q9W7E7/entry#sequences)). Submit the exact sequence to [AlphaFold](https://alphafoldserver.com/). Download the results, and copy one of the .cif files to the `data/models` directory of `epictope`. Finally, supply the path to the custom structure as a command-line input to `epictope` in the `-s/--structure` option:
+```bash
+conda activate epictope
+epictope score Q9W7E7 -s data/models/custom_model_of_Q9W7E7.cif
+```
+Sometimes, the user-supplied structure file may contain only one portion of the complete protein, for example, when the AlphaFold Server limits the user-supplied sequence. In this case, the first residue of the custom structure can be supplied as an addition argument `-r/--residue` (the N-terminal residue of the protein is residue 1). For example, if the custom structure starts at residue 57 of the protein:
+```bash
+epictope score Q9W7E7 -s data/models/custom_model_of_Q9W7E7.cif -r 57
+```
+
+For a full list of the options available, enter `epictope score --help`
+
+### Example 2: Viewing your results.
+
+The EpicTope workflow generates a "\<UniprotID\>_score.csv" file (ex: Q9W7E7_score.csv), containing the individual feature scores for each position, the minimum score across features for each position, and a weighted sum score of all features. These values can be plotted in the data visualization tool of choice.
+
+For convenience, we provide a "plot_scores.R" scripts that generates a plot of the minimum score for each position in the sequence using a rolling average of window size 7.
+
+The plot script can be run in the same way as previous commands.
+
+```bash
+epictope plot outputs/Q9W7E7_score.csv
+"outputs/Q97W7E7.tiff"
+```
+
+For a full list of the options available, enter `epictope plot --help`
 
 ## License 
 

@@ -2,3 +2,7 @@ data/
 outputs/
 ignore/
 .Rprofile
+__pycache__
+ANCHOR*
+iupred2a*
+*.log

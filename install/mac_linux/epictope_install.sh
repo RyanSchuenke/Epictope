@@ -42,10 +42,10 @@ else
     echo "Conda is already installed."
 
     # Create a new conda environment for epictope
-    conda create -n epictope
-    conda install -n epictope -c conda-forge dssp
-    conda install -n epictope -c bioconda blast muscle
-    conda install -n epictope -c conda-forge r-base r-stringi r-openssl r-remotes r-curl r-rvest r-httr "r-r.utils" r-biocmanager "python>=3.11.4"
+    conda create -n epictope --yes
+    conda install -n epictope -c conda-forge dssp --yes
+    conda install -n epictope -c conda-forge r-base r-stringi r-openssl r-remotes r-curl r-rvest r-httr "r-r.utils" r-biocmanager "python>=3.11.4" --yes
+    conda install -n epictope -c bioconda blast muscle --yes
     
     # Install R packages in the epictope environment
     (
@@ -53,6 +53,7 @@ else
     conda activate epictope
     R -e "BiocManager::install('Biostrings')"
     R -e "remotes::install_github('FriedbergLab/EpicTope')"
+    python -m pip install pandas matplotlib Bio requests pyyaml
     conda deactivate
     )
     # Install epitope_tag scripts
@@ -61,6 +62,3 @@ else
     curl -O "https://raw.githubusercontent.com/FriedbergLab/Epictope/main/scripts/install.R"
     curl -O "https://raw.githubusercontent.com/FriedbergLab/Epictope/main/scripts/config_defaults.R" 
 fi
-
-
-
