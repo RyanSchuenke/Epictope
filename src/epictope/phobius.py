@@ -73,7 +73,6 @@ def phobius(seq:str) -> pd.DataFrame:
             )
             output, err = process.communicate()
         output = output.decode('utf8')
-        print(output)
         results = []
         for line in output.splitlines()[1:]:
             l = line.split()
