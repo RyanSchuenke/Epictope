@@ -28,7 +28,7 @@ def run(args) -> None:
     if args.components:
         plot_scores(scores_file=args.score_file, output_file=args.output_file, 
                     window_size=args.window_size, min_non_zero_count=args.min_non_zero_count, 
-                    score_components=["rsa", "ss_score", "inv_anchor2", "normalized_entropy"])
+                    score_components=["rsa", "ss_score", "inv_anchor2", "normalized_entropy", "phobius_score"])
     else:
         plot_scores(scores_file=args.score_file, output_file=args.output_file, 
                     window_size=args.window_size, min_non_zero_count=args.min_non_zero_count)

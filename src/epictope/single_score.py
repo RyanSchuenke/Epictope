@@ -5,6 +5,7 @@ from epictope.anchor import remote_iupred_anchor, config_iupred2a, iupred_anchor
 from epictope.blast import install_db, blast, fetch_seq
 from epictope.muscle import muscle
 from epictope.shannon import shannon_entropy
+from epictope.phobius import config_phobius, phobius, remote_phobius
 from epictope.score import score
 from epictope.plot_scores import plot_scores
 from epictope.config import load_config
@@ -33,6 +34,7 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
     config = load_config(config_path)
     
     has_iupred2a = config_iupred2a()
+    has_phobius = config_phobius()
 
 
     ## Setup flders and make blast databases
@@ -90,6 +92,13 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
         anchor_df = remote_iupred_anchor(uniprot_accession=query)
 
 
+    ## Phobius
+    if has_phobius:
+        phobius_df = phobius(seq)
+    else:
+        phobius_df = remote_phobius()
+
+
     ## Shannon entropy
     # 1. find top hit for each of the species
     blast_hits = {query:seq}
@@ -107,7 +116,7 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
     shannon = shannon_entropy(msa=alignment, query=query, seq_len=len(seq))
 
     ## Calculate final scores
-    score_df = score(dssp=dssp, anchor=anchor_df, shannon=shannon, config=config)
+    score_df = score(dssp=dssp, anchor=anchor_df, shannon=shannon, phobius=phobius_df, config=config)
 
     # Save output file
     output_file = os.path.join(folders["output_folder"], query+"_score")
