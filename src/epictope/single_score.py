@@ -74,7 +74,7 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
         if start_idx == -1:
             logger.error("The structure sequence is not found in the protein sequence")
             raise Exception("The structure sequence is not found in the protein sequence")
-        dssp = dssp_command(structure_file=custom_struct, res_start=start_idx)
+        dssp = dssp_command(structure_file=custom_struct)
     else:
         # retrieve the alphafold structure by the cifUrl
         alphafold_file = fetch_alphafold(model_url = alphafold_uniprot_data["cifUrl"], model_folder=folders["model_folder"])

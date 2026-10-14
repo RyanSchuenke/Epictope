@@ -9,14 +9,12 @@ import pandas as pd
 import logging
 logger = logging.getLogger(__name__)
 
-def dssp_command(structure_file: os.PathLike, res_start:int = 0, save_intermediates: bool = False) -> pd.DataFrame:
+def dssp_command(structure_file: os.PathLike, save_intermediates: bool = False) -> pd.DataFrame:
     """
     Runs dssp on a provided structure file
     
     :param structure_file: pdb or mmCIF file input to the dssp command
     :type structure_file: os.PathLike
-    :param res_start: first residue in the true sequence which appears in the structure file (0 indexed)
-    :type res_start: int
     :return: dataframe containing the dssp output
     :rtype: DataFrame
     """
@@ -45,10 +43,9 @@ def dssp_command(structure_file: os.PathLike, res_start:int = 0, save_intermedia
             dssp = make_dssp_dict(file_out.name)[0]
     
     # construct dssp dataframe from output file
-    dssp_out = pd.DataFrame(index=range(len(dssp)+res_start), columns=["aa", "structure", "acc", "phi", "psi", "position"])
+    dssp_out = pd.DataFrame(index=range(len(dssp)), columns=["aa", "structure", "acc", "phi", "psi", "position"])
     for key, value in dssp.items():
-        dssp_out.loc[key[1][1]-1+res_start] = list(value[:6])
-        dssp_out.at[key[1][1]-1+res_start, "position"]+=res_start
+        dssp_out.loc[key[1][1]-1] = list(value[:5])+[key[1][1]]
     return dssp_out.set_index(["position", "aa"]).dropna()
 
 def score_ss(dssp:pd.DataFrame, ss_key:dict[int]) -> pd.DataFrame:
