@@ -15,7 +15,7 @@ from pandas import DataFrame
 import logging
 logger = logging.getLogger(__name__)
 
-def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.PathLike = None, plot:bool = False) -> DataFrame:
+def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.PathLike = None, membrane_side:str = None, plot:bool = False) -> DataFrame:
     """
     Function for running the main Epictope pipeline and calculating the 
     "least worst" sites for epitope insertion in a protein sequence.
@@ -26,13 +26,17 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
     :type config_path: os.PathLike
     :param custom_struct: Path to a user provided structure file in pdb or cif format for the query protein
     :type custom_struct: os.PathLike
+    :param membrane_side: option for whether a tag should be tolerated 'inside', 'outside', or 'either' side for transmembrane proteins. (default: 'either', overrides config)
+    :type membrane_side: str
     :param plot: boolean value to determine if the min score should be plotted
     :type plot: bool
     :return: final score dataframe containing shannon entropy, dssp, and iupred2/anchor2 data
     :rtype: DataFrame
     """
     config = load_config(config_path)
-    
+    if membrane_side:
+        config["membrane_side"] = {"inside": 1 if not membrane_side == "outside" else 0,
+                                   "outside": 1 if not membrane_side == "inside" else 0}
     has_iupred2a = config_iupred2a()
     has_phobius = config_phobius()
 
@@ -96,7 +100,7 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
     if has_phobius:
         phobius_df = phobius(seq)
     else:
-        phobius_df = remote_phobius()
+        phobius_df = remote_phobius(seq)
 
 
     ## Shannon entropy

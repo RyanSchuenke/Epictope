@@ -63,6 +63,12 @@ DEFAULT_CONFIG = {
         "W": 264,
         "Y": 255,
         "V": 165
+    },
+    # boolean for if the tagging location should be allowed inside or outside of 
+    # the membrane for transmembrane proteins.
+    "membrane_side":{
+        "inside":True,
+        "outside":True
     }
 }
 

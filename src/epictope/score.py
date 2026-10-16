@@ -23,7 +23,7 @@ def score(dssp:pd.DataFrame, anchor:pd.DataFrame, shannon:pd.DataFrame, phobius:
     dssp = rsa(dssp, max_sasa=config["max_sasa"])
     anchor = anchor_score(anchor)
     shannon = norm_shannon(shannon)
-    phobius = score_phobius(phobius)
+    phobius = score_phobius(phobius, membrane_side=config["membrane_side"])
     
     score_features = ["inv_anchor2","normalized_entropy", "rsa", "ss_score", "phobius_score"]
     

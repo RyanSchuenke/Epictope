@@ -95,24 +95,26 @@ def phobius(seq:str) -> pd.DataFrame:
         phobius_df = remote_phobius(seq)
     return phobius_df
 
-def score_phobius(phobius_df:pd.DataFrame) -> pd.DataFrame:
+def score_phobius(phobius_df:pd.DataFrame, membrane_side:dict[bool]) -> pd.DataFrame:
     """
     Scoores residues based on the annotation received from Phobius
     
     :param phobius_df: dataframe containing the phobius output
     :type phobius_df: pd.DataFrame
+    :param membrane_side: dictionary of boolean values for if the tag is allowed inside or outside the membrane
+    :type membrane_side: dict[bool]
     :return: input dataframe with additional "phobius_score" column
     :rtype: pd.DataFrame
     """
     feature_key = {
-        'i':1, #"inside",
-        'o':1, #"outside",
-        'O':1, #"long outside",
+        'i':1 if membrane_side["inside"] else 0,  #"inside",
+        'o':1 if membrane_side["outside"] else 0, #"outside",
+        'O':1 if membrane_side["outside"] else 0, #"long outside",
         'n':0, #"n-terminus",
         'M':0, #"membrane",
         'c':0, #"c-terminus of signal",
         'C':0, #"cleavage site",
-        'h':0, #"hydrophobic",
+        'h':0, #"hydrophobic of signal",
     }
     
     phobius_df["phobius_score"] = phobius_df["phobius"].map(feature_key)
