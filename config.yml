@@ -59,3 +59,7 @@ max_sasa:
   W: 264
   Y: 255
   V: 165
+
+membrane_side:
+  inside: True
+  outside: True
