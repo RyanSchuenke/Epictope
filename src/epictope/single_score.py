@@ -114,7 +114,7 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
             logger.info("no hits from " + species + " database")
 
     # 2. create multiple sequence alignment
-    alignment = muscle(query=query, seqs=blast_hits, output_folder=folders["output_folder"])
+    alignment = muscle(query=query, seqs=blast_hits, output_folder=folders["output_folder"], save_intermediates=True)
 
     # 3. calculate shannon entropy
     shannon = shannon_entropy(msa=alignment, query=query, seq_len=len(seq))

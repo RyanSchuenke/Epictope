@@ -20,7 +20,7 @@ def muscle(query:str, seqs:dict[str], output_folder:os.PathLike, save_intermedia
     :rtype: Align.MultipleSeqAlignment
     """
     muscle_exe = find_exe("muscle")
-    output_file = os.path.join(output_folder, query)+"_test_2_msa.fasta"
+    output_file = os.path.join(output_folder, query)+"_msa.fasta"
 
     with tempfile.NamedTemporaryFile(mode='w', suffix=".fasta", delete=False) as tmp_in:
         for seq in seqs:
