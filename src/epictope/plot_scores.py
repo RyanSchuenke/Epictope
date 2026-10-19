@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import logging
 logger = logging.getLogger(__name__)
+plt.style.use('tableau-colorblind10')
 
 def plot_scores(scores_file: os.PathLike, output_file:os.PathLike = None, 
                 score_components:list[str] = ["min"], 
@@ -58,7 +59,21 @@ def plot_scores(scores_file: os.PathLike, output_file:os.PathLike = None,
         ax.plot(plot_df.index.get_level_values("position"), plot_df[col+"_moving_avg"], label=col)
         out_cols.append(col)
         out_cols.append(col+"_moving_avg")
-    ax.legend(bbox_to_anchor=(0., .97, 1., .102), loc='upper center', ncols=len(score_components), mode="expand", borderaxespad=0., fontsize=12)
+    
+    transmembran_start = 0
+    transmembrane = False
+    for i, row in plot_df.iterrows():
+        index = i[0]
+        if plot_df.loc[index]["phobius_score"].values[0] == 0 and not transmembrane:
+            transmembran_start = index
+            transmembrane = True
+        elif plot_df.loc[index]["phobius_score"].values[0] == 1 and transmembrane:
+            ax.axvspan(transmembran_start, index, facecolor='#5F9ED1', alpha=0.5, label="Transmembrane")
+            transmembrane = False
+
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys(),bbox_to_anchor=(0., .97, 1., .102), loc='upper center', ncols=len(score_components)+1, mode="expand", borderaxespad=0., fontsize=12)
     
     plot_df[out_cols].to_csv(out_csv)
     fig.savefig(output_file, bbox_inches='tight')
