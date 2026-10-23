@@ -50,7 +50,7 @@ def plot_scores(scores_file: os.PathLike, output_file:os.PathLike = None,
               'm': "Transmembrane",
               'o': "Outside membrane",
               'n': "Signal peptide",
-              'p': "Signal peptide",
+              'h': "Signal peptide",
               'c': "Signal peptide",
               '/': "Signal peptide"}
     states_colors = {"Inside membrane":"#5F9ED1",
