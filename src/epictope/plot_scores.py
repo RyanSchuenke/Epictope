@@ -44,36 +44,63 @@ def plot_scores(scores_file: os.PathLike, output_file:os.PathLike = None,
     plot_df = plot_df.dropna()
     half_window = window_size//2
     out_cols = []
+    
+    # initialize transmembrane state
+    states = {'i': "Inside membrane",
+              'm': "Transmembrane",
+              'o': "Outside membrane",
+              'n': "Signal peptide",
+              'p': "Signal peptide",
+              'c': "Signal peptide",
+              '/': "Signal peptide"}
+    states_colors = {"Inside membrane":"#5F9ED1",
+                     "Transmembrane":"#898989",
+                     "Outside membrane":"#A2C8EC",
+                     "Signal peptide":"#FFBC79"}
+    membrane_state_start = 1
+    membrane_state = states[plot_df.loc[1]["phobius"].values[0].lower()]
+    membrane_handles = []
+    
     # get the moving average with a window of size 7 (3, 1, 3) around each position
+    for index in range(1,len(plot_df)+1):
+        # get moving average of scores to graph
+        if index <= half_window:
+            for col in score_components:
+                plot_df.loc[index,col+"_moving_avg"] = plot_df.loc[:index+half_window-1][col].mean() if sum(1 for i in plot_df.loc[:index+half_window-1][col] if i) >= min_non_zero_count else 0
+        elif index <= len(plot_df)-half_window:
+            for col in score_components:
+                plot_df.loc[index,col+"_moving_avg"] = plot_df.loc[index-half_window:index+half_window][col].mean() if sum(1 for i in plot_df.loc[index-half_window:index+half_window][col] if i) >= min_non_zero_count else 0
+        elif index <= len(plot_df):
+            for col in score_components:
+                plot_df.loc[index,col+"_moving_avg"] = plot_df.loc[index-half_window:][col].mean() if sum(1 for i in plot_df.loc[index-half_window:][col] if i) >= min_non_zero_count else 0
+        # get transmembrane regions to highlight
+        if states[plot_df.loc[index]["phobius"].values[0].lower()] != membrane_state:
+            membrane_handles.append(ax.axvspan(membrane_state_start, index, facecolor=states_colors[membrane_state], alpha=0.4, label=membrane_state))
+            membrane_state = states[plot_df.loc[index]["phobius"].values[0].lower()]
+            membrane_state_start = index
+    if membrane_state_start != 1:
+        membrane_handles.append(ax.axvspan(membrane_state_start, index, facecolor=states_colors[membrane_state], alpha=0.4, label=membrane_state))
+    # plot moving averages
+    score_handles = []
     for col in score_components:
-        for i, row in plot_df[:half_window].iterrows():
-            index = i[0]
-            plot_df.loc[index,col+"_moving_avg"] = plot_df.loc[:index+half_window-1][col].mean() if sum(1 for i in plot_df.loc[:index+half_window-1][col] if i) >= min_non_zero_count else 0
-        for i, row in plot_df[half_window:len(plot_df)-half_window].iterrows():
-            index = i[0]
-            plot_df.loc[index,col+"_moving_avg"] = plot_df.loc[index-half_window:index+half_window][col].mean() if sum(1 for i in plot_df.loc[index-half_window:index+half_window][col] if i) >= min_non_zero_count else 0
-        for i, row in plot_df[len(plot_df)-half_window:].iterrows():
-            index = i[0]
-            plot_df.loc[index,col+"_moving_avg"] = plot_df.loc[index-half_window:][col].mean() if sum(1 for i in plot_df.loc[index-half_window:][col] if i) >= min_non_zero_count else 0
-        
-        ax.plot(plot_df.index.get_level_values("position"), plot_df[col+"_moving_avg"], label=col)
+        line, = ax.plot(plot_df.index.get_level_values("position"), plot_df[col+"_moving_avg"], label=col)
+        score_handles.append(line)
         out_cols.append(col)
         out_cols.append(col+"_moving_avg")
     
-    transmembran_start = 0
-    transmembrane = False
-    for i, row in plot_df.iterrows():
-        index = i[0]
-        if plot_df.loc[index]["phobius_score"].values[0] == 0 and not transmembrane:
-            transmembran_start = index
-            transmembrane = True
-        elif plot_df.loc[index]["phobius_score"].values[0] == 1 and transmembrane:
-            ax.axvspan(transmembran_start, index, facecolor='#5F9ED1', alpha=0.5, label="Transmembrane")
-            transmembrane = False
-
-    handles, labels = plt.gca().get_legend_handles_labels()
-    by_label = dict(zip(labels, handles))
-    plt.legend(by_label.values(), by_label.keys(),bbox_to_anchor=(0., .97, 1., .102), loc='upper center', ncols=len(score_components)+1, mode="expand", borderaxespad=0., fontsize=12)
-    
+    if score_handles:
+        ax.legend(score_handles, score_components,
+                                 bbox_to_anchor=(0., 1.08 if membrane_handles else .97, 1., .102),
+                                 loc='upper center', ncols=len(score_components),
+                                 mode="expand", borderaxespad=0., fontsize=12)
+    if membrane_handles:
+        ax2 = ax.twinx()
+        ax2.get_yaxis().set_ticks([])
+        membrane_labels = [handle.get_label() for handle in membrane_handles]
+        by_label = dict(zip(membrane_labels, membrane_handles))
+        ax2.legend(by_label.values(), by_label.keys(),
+                                    bbox_to_anchor=(0., .97, 1., .102), loc='upper center',
+                                    ncols=len(by_label), mode="expand", borderaxespad=0., fontsize=12)
+    # save output image and data
     plot_df[out_cols].to_csv(out_csv)
     fig.savefig(output_file, bbox_inches='tight')
