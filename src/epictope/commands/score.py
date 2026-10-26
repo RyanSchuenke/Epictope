@@ -16,8 +16,14 @@ def add_parser(subparsers:argparse.ArgumentParser):
   'species': list of species to use as blast databases more msa and shannon entropy calculation
   'weights': dictionary of score component weights for shannon entropy 'h_weight', relative solvent accessibility 'rsa_weight', secondary structure 'ss_weight', and disordered binding region 'br_weight'
   'ss_key': dictionary with the secondary structure mapping for score of secondary structure characters [GHIECTBSP-] from dssp
-  'max_sasa': dictionary mapping the maximum solvent accessibility for each amino acid""",
+  'max_sasa': dictionary mapping the maximum solvent accessibility for each amino acid
+  'membrane_side': dictionary with boolean value for allowing the tag to be 'inside' or 'outside' membrane for transmembrane proteins, default both True""",
                     default = None)
+
+    parser.add_argument("-m", "--membrane", dest="membrane", required = False, 
+                        help = "option for whether a tag should be tolerated 'inside', 'outside', or 'either' side for transmembrane proteins. (default: 'either', overrides config)",
+                        choices=["inside", "outside", "either"],
+                        default = "either")
 
     custom_struct_group = parser.add_argument_group(title='custom_structure', description='Arguments for custom structure input')
 
@@ -28,4 +34,4 @@ def add_parser(subparsers:argparse.ArgumentParser):
     parser.set_defaults(func=run)
 
 def run(args) -> None:
-    single_score(query=args.query, config_path=args.config, custom_struct=args.custom_struct, plot=args.plot)
+    single_score(query=args.query, config_path=args.config, custom_struct=args.custom_struct, membrane_side=args.membrane, plot=args.plot)

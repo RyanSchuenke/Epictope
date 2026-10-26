@@ -1,9 +1,10 @@
 from epictope.dssp import score_ss, rsa
 from epictope.anchor import anchor_score
 from epictope.shannon import norm_shannon
+from epictope.phobius import score_phobius
 import pandas as pd
 
-def score(dssp:pd.DataFrame, anchor:pd.DataFrame, shannon:pd.DataFrame, config:dict) -> pd.DataFrame:
+def score(dssp:pd.DataFrame, anchor:pd.DataFrame, shannon:pd.DataFrame, phobius:pd.DataFrame, config:dict) -> pd.DataFrame:
     """
     Calculates the min score and sum score for each position
     
@@ -22,10 +23,11 @@ def score(dssp:pd.DataFrame, anchor:pd.DataFrame, shannon:pd.DataFrame, config:d
     dssp = rsa(dssp, max_sasa=config["max_sasa"])
     anchor = anchor_score(anchor)
     shannon = norm_shannon(shannon)
+    phobius = score_phobius(phobius, membrane_side=config["membrane_side"])
     
-    score_features = ["inv_anchor2","normalized_entropy", "rsa", "ss_score"]
+    score_features = ["inv_anchor2","normalized_entropy", "rsa", "ss_score", "phobius_score"]
     
-    score_df = pd.concat([anchor, shannon, dssp], axis=1, join="outer")
+    score_df = pd.concat([anchor, shannon, dssp, phobius], axis=1, join="outer")
     score_df = score_df.infer_objects()
     
     score_df["sum_score"] = score_df[score_features].sum(axis=1, skipna=False)

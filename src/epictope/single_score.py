@@ -5,6 +5,7 @@ from epictope.anchor import remote_iupred_anchor, config_iupred2a, iupred_anchor
 from epictope.blast import install_db, blast, fetch_seq
 from epictope.muscle import muscle
 from epictope.shannon import shannon_entropy
+from epictope.phobius import config_phobius, phobius, remote_phobius
 from epictope.score import score
 from epictope.plot_scores import plot_scores
 from epictope.config import load_config
@@ -14,7 +15,7 @@ from pandas import DataFrame
 import logging
 logger = logging.getLogger(__name__)
 
-def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.PathLike = None, plot:bool = False) -> DataFrame:
+def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.PathLike = None, membrane_side:str = None, plot:bool = False) -> DataFrame:
     """
     Function for running the main Epictope pipeline and calculating the 
     "least worst" sites for epitope insertion in a protein sequence.
@@ -25,14 +26,19 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
     :type config_path: os.PathLike
     :param custom_struct: Path to a user provided structure file in pdb or cif format for the query protein
     :type custom_struct: os.PathLike
+    :param membrane_side: option for whether a tag should be tolerated 'inside', 'outside', or 'either' side for transmembrane proteins. (default: 'either', overrides config)
+    :type membrane_side: str
     :param plot: boolean value to determine if the min score should be plotted
     :type plot: bool
     :return: final score dataframe containing shannon entropy, dssp, and iupred2/anchor2 data
     :rtype: DataFrame
     """
     config = load_config(config_path)
-    
+    if membrane_side:
+        config["membrane_side"] = {"inside": 1 if not membrane_side == "outside" else 0,
+                                   "outside": 1 if not membrane_side == "inside" else 0}
     has_iupred2a = config_iupred2a()
+    has_phobius = config_phobius()
 
 
     ## Setup flders and make blast databases
@@ -74,7 +80,7 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
         if start_idx == -1:
             logger.error("The structure sequence is not found in the protein sequence")
             raise Exception("The structure sequence is not found in the protein sequence")
-        dssp = dssp_command(structure_file=custom_struct, res_start=start_idx)
+        dssp = dssp_command(structure_file=custom_struct)
     else:
         # retrieve the alphafold structure by the cifUrl
         alphafold_file = fetch_alphafold(model_url = alphafold_uniprot_data["cifUrl"], model_folder=folders["model_folder"])
@@ -90,6 +96,13 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
         anchor_df = remote_iupred_anchor(uniprot_accession=query)
 
 
+    ## Phobius
+    if has_phobius:
+        phobius_df = phobius(seq)
+    else:
+        phobius_df = remote_phobius(seq)
+
+
     ## Shannon entropy
     # 1. find top hit for each of the species
     blast_hits = {query:seq}
@@ -101,13 +114,13 @@ def single_score(query:str, config_path:os.PathLike = None, custom_struct:os.Pat
             logger.info("no hits from " + species + " database")
 
     # 2. create multiple sequence alignment
-    alignment = muscle(query=query, seqs=blast_hits, output_folder=folders["output_folder"])
+    alignment = muscle(query=query, seqs=blast_hits, output_folder=folders["output_folder"], save_intermediates=True)
 
     # 3. calculate shannon entropy
     shannon = shannon_entropy(msa=alignment, query=query, seq_len=len(seq))
 
     ## Calculate final scores
-    score_df = score(dssp=dssp, anchor=anchor_df, shannon=shannon, config=config)
+    score_df = score(dssp=dssp, anchor=anchor_df, shannon=shannon, phobius=phobius_df, config=config)
 
     # Save output file
     output_file = os.path.join(folders["output_folder"], query+"_score")
