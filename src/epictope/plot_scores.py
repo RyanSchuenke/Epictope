@@ -32,14 +32,26 @@ def plot_scores(scores_file: os.PathLike, output_file:os.PathLike = None,
         out_csv = os.path.splitext(output_file)[0]+"_plot_data.csv"
     
     plot_df = pd.read_csv(scores_file).set_index(["position", "aa"])
-    fig, ax = plt.subplots(1,1)
+    if len(plot_df.phobius.unique()) > 1:
+        fig, (ax, legend_ax, state_ax) = plt.subplots(
+            3, 1, sharex=True,
+            gridspec_kw={"height_ratios": [4, 0.6, 1], "hspace": 0.05}
+        )
+        legend_ax.set_axis_off()
+    else:
+        fig, ax = plt.subplots(1,1)
     fig.set_size_inches(12,6)
     ax.set_xlim((1, plot_df.index.get_level_values("position").max()))
     ax.set_ylim((-0.05, 1.05))
     ax.tick_params(axis='both', which='major', labelsize=12)
     ax.minorticks_on()
-    ax.set_xlabel("Amino Acid Position", fontsize=18)
     ax.set_ylabel("Score", fontsize=18)
+    if "state_ax" in locals():
+        state_ax.set_ylim(0, 1)
+        state_ax.set_yticks([])
+        state_ax.set_xlabel("Amino Acid Position", fontsize=18)
+    else:
+        ax.set_xlabel("Amino Acid Position", fontsize=18)
     
     plot_df = plot_df.dropna()
     half_window = window_size//2
@@ -59,8 +71,7 @@ def plot_scores(scores_file: os.PathLike, output_file:os.PathLike = None,
                      "Signal peptide":"#FFBC79"}
     membrane_state_start = 1
     membrane_state = states[plot_df.loc[1]["phobius"].values[0].lower()]
-    membrane_handles = []
-    
+    membrane_segments = []
     # get the moving average with a window of size 7 (3, 1, 3) around each position
     for index in range(1,len(plot_df)+1):
         # get moving average of scores to graph
@@ -75,11 +86,23 @@ def plot_scores(scores_file: os.PathLike, output_file:os.PathLike = None,
                 plot_df.loc[index,col+"_moving_avg"] = plot_df.loc[index-half_window:][col].mean() if sum(1 for i in plot_df.loc[index-half_window:][col] if i) >= min_non_zero_count else 0
         # get transmembrane regions to highlight
         if states[plot_df.loc[index]["phobius"].values[0].lower()] != membrane_state:
-            membrane_handles.append(ax.axvspan(membrane_state_start, index, facecolor=states_colors[membrane_state], alpha=0.4, label=membrane_state))
+            membrane_segments.append((membrane_state_start, index, membrane_state))
             membrane_state = states[plot_df.loc[index]["phobius"].values[0].lower()]
             membrane_state_start = index
-    if membrane_state_start != 1:
-        membrane_handles.append(ax.axvspan(membrane_state_start, index, facecolor=states_colors[membrane_state], alpha=0.4, label=membrane_state))
+    if membrane_state_start > 1:
+        membrane_segments.append((membrane_state_start, index, membrane_state))
+    membrane_handles = {}
+    for start, end, state in membrane_segments:
+        bar = state_ax.barh(
+            0.5,
+            end - start,
+            left=start,
+            height=0.8,
+            color=states_colors[state],
+            alpha=0.4,
+            label=state,
+        )
+        membrane_handles.setdefault(state, bar.patches[0])
     # plot moving averages
     score_handles = []
     for col in score_components:
@@ -90,17 +113,13 @@ def plot_scores(scores_file: os.PathLike, output_file:os.PathLike = None,
     
     if score_handles:
         ax.legend(score_handles, score_components,
-                                 bbox_to_anchor=(0., 1.08 if membrane_handles else .97, 1., .102),
-                                 loc='upper center', ncols=len(score_components),
-                                 mode="expand", borderaxespad=0., fontsize=12)
+                  bbox_to_anchor=(0., 1.01 if membrane_handles else .97, 1., .102),
+                  loc='upper center', ncols=len(score_components),
+                  mode="expand", borderaxespad=0., fontsize=12)
     if membrane_handles:
-        ax2 = ax.twinx()
-        ax2.get_yaxis().set_ticks([])
-        membrane_labels = [handle.get_label() for handle in membrane_handles]
-        by_label = dict(zip(membrane_labels, membrane_handles))
-        ax2.legend(by_label.values(), by_label.keys(),
-                                    bbox_to_anchor=(0., .97, 1., .102), loc='upper center',
-                                    ncols=len(by_label), mode="expand", borderaxespad=0., fontsize=12)
+        legend_ax.legend(membrane_handles.values(), membrane_handles.keys(),
+                         loc="center", ncols=len(membrane_handles),
+                         mode="expand", borderaxespad=0., fontsize=12)
     # save output image and data
     plot_df[out_cols].to_csv(out_csv)
     fig.savefig(output_file, bbox_inches='tight')
